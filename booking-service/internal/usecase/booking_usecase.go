@@ -38,7 +38,7 @@ func (u *BookingUsecase) Create(userID, eventID, seatID uint) (*entity.Booking, 
 func (u *BookingUsecase) Update(id uint, status string) (*entity.Booking, error) {
 	bookingID, err := u.repo.FindBookingByID(id)
 	if err != nil {
-		return nil, errors.New("get booking by ID notfound")
+		return nil, errors.New("get booking by ID not found")
 	}
 
 	booking := &entity.Booking{
@@ -52,4 +52,16 @@ func (u *BookingUsecase) Update(id uint, status string) (*entity.Booking, error)
 	}
 
 	return booking, nil
+}
+
+func (u *BookingUsecase) Delete(id uint) error {
+	bookingID, err := u.repo.FindBookingByID(id)
+	if err != nil {
+		return errors.New("get booking by ID not found")
+	}
+
+	if err := u.repo.Delete(bookingID.ID); err != nil {
+		return errors.New("error : delete booking ")
+	}
+	return nil
 }

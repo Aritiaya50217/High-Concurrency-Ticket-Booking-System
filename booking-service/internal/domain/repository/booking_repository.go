@@ -7,4 +7,5 @@ type BookingRepository interface {
 	FindBySeatID(seatID uint) (*entity.Booking, error)
 	FindBookingByID(id uint) (*entity.Booking, error)
 	UpdateStatus(id uint, status string) error
+	Delete(id uint) error
 }

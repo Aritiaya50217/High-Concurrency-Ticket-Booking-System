@@ -66,3 +66,7 @@ func (r *bookingRepository) FindBookingByID(id uint) (*entity.Booking, error) {
 
 	return booking, nil
 }
+
+func (r *bookingRepository) Delete(id uint) error {
+	return r.db.Where("id = ?", id).Delete(&model.BookingModel{}).Error
+}
