@@ -98,3 +98,49 @@ func (h *BookingHandler) FindBookingByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, booking)
 }
+
+func (h *BookingHandler) FindAll(c *gin.Context) {
+	var req dto.SearchBookingRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid query parameters"})
+		return
+	}
+
+	// default values
+	if req.Offset <= 0 {
+		req.Offset = 1
+	}
+
+	if req.Limit <= 0 {
+		req.Limit = 10
+	}
+
+	offset := (req.Offset - 1) * req.Limit
+
+	bookings, total, err := h.usecase.Search(req.Status, offset, req.Limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	result := []dto.SearchBookingResponse{}
+	for _, booking := range bookings {
+		result = append(result, dto.SearchBookingResponse{
+			ID:      booking.ID,
+			UserID:  booking.UserID,
+			EventID: booking.EventID,
+			SeatID:  booking.SeatID,
+			Status:  booking.Status,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": result,
+		"pagination": gin.H{
+			"offset": req.Offset,
+			"limit":  req.Limit,
+			"total":  total,
+		},
+	})
+
+}

@@ -74,3 +74,38 @@ func (r *bookingRepository) FindBookingByID(id uint) (*entity.Booking, error) {
 func (r *bookingRepository) Delete(id uint) error {
 	return r.db.Where("id = ?", id).Delete(&model.BookingModel{}).Error
 }
+
+func (r *bookingRepository) Search(status string, offset, limit int) ([]entity.Booking, int64, error) {
+	var bookings []entity.Booking
+	var models []model.BookingModel
+	var total int64
+
+	query := r.db.Model(&model.BookingModel{})
+
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	// total count
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// pagination
+	if err := query.Offset(offset).Limit(limit).Find(&models).Error; err != nil {
+		return nil, 0, err
+	}
+
+	for _, m := range models {
+		bookings = append(bookings, entity.Booking{
+			ID:      m.ID,
+			UserID:  m.UserID,
+			SeatID:  m.SeatID,
+			EventID: m.EventID,
+			Status:  m.Status,
+		})
+	}
+
+	return bookings, total, nil
+
+}

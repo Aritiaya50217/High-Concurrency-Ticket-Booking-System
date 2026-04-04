@@ -8,4 +8,5 @@ type BookingRepository interface {
 	FindBookingByID(id uint) (*entity.Booking, error)
 	UpdateStatus(id uint, status string) error
 	Delete(id uint) error
+	Search(status string, offset, limit int) ([]entity.Booking, int64, error)
 }

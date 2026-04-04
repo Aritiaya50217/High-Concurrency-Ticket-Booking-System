@@ -12,5 +12,6 @@ func SetupRouter(h *handler.BookingHandler) *gin.Engine {
 	api.POST("/booking/:id", h.UpdateBooking)
 	api.DELETE("/booking/:id", h.DeleteBooking)
 	api.GET("/booking/:id", h.FindBookingByID)
+	api.GET("/booking/search", h.FindAll)
 	return r
 }

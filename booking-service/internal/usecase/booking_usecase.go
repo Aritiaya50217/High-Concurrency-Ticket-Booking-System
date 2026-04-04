@@ -74,3 +74,7 @@ func (u *BookingUsecase) FindByID(id uint) (*entity.Booking, error) {
 
 	return bookingID, nil
 }
+
+func (u *BookingUsecase) Search(status string, offset, limit int) ([]entity.Booking, int64, error) {
+	return u.repo.Search(status, offset, limit)
+}
