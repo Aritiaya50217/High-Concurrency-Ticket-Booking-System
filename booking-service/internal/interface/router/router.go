@@ -9,5 +9,6 @@ func SetupRouter(h *handler.BookingHandler) *gin.Engine {
 	r := gin.Default()
 	api := r.Group("/api")
 	api.POST("/booking", h.CreateBooking)
+	api.POST("/booking/:id", h.UpdateBooking)
 	return r
 }

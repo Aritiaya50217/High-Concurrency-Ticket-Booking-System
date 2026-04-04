@@ -34,3 +34,22 @@ func (u *BookingUsecase) Create(userID, eventID, seatID uint) (*entity.Booking, 
 	return booking, nil
 
 }
+
+func (u *BookingUsecase) Update(id uint, status string) (*entity.Booking, error) {
+	bookingID, err := u.repo.FindBookingByID(id)
+	if err != nil {
+		return nil, errors.New("get booking by ID notfound")
+	}
+
+	booking := &entity.Booking{
+		ID:     bookingID.ID,
+		UserID: bookingID.UserID,
+		Status: status,
+	}
+
+	if err := u.repo.UpdateStatus(booking.ID, booking.Status); err != nil {
+		return nil, errors.New("error : update status ")
+	}
+
+	return booking, nil
+}

@@ -2,9 +2,11 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/dto"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/usecase"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,4 +38,34 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, res)
+}
+
+func (h *BookingHandler) UpdateBooking(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 0)
+
+	var req dto.UpdateBookingRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		return
+	}
+
+	if !utils.IsValidateStatus(req.Status) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid booking status"})
+		return
+	}
+
+	booking, err := h.usecase.Update(uint(id), req.Status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	res := dto.UpdateBookingResponse{
+		ID:     booking.ID,
+		UserID: booking.UserID,
+		Status: booking.Status,
+	}
+
+	c.JSON(http.StatusOK, res)
 }
