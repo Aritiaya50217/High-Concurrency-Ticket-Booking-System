@@ -28,6 +28,6 @@ COPY --from=builder /app/booking-service .
 # copy config folder
 COPY configs ./configs
 
-EXPOSE 8080
+EXPOSE 8081
 
 CMD ["./booking-service"]
