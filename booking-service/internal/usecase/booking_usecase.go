@@ -65,3 +65,12 @@ func (u *BookingUsecase) Delete(id uint) error {
 	}
 	return nil
 }
+
+func (u *BookingUsecase) FindByID(id uint) (*entity.Booking, error) {
+	bookingID, err := u.repo.FindBookingByID(id)
+	if err != nil {
+		return nil, errors.New("get booking by ID not found")
+	}
+
+	return bookingID, nil
+}

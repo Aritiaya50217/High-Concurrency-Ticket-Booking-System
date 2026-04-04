@@ -84,3 +84,18 @@ func (h *BookingHandler) DeleteBooking(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
+
+func (h *BookingHandler) FindBookingByID(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	booking, err := h.usecase.FindByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, booking)
+}

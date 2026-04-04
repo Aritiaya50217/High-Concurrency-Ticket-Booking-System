@@ -59,9 +59,13 @@ func (r *bookingRepository) FindBookingByID(id uint) (*entity.Booking, error) {
 	}
 
 	booking := &entity.Booking{
-		ID:     bookingModel.ID,
-		UserID: bookingModel.UserID,
-		Status: bookingModel.Status,
+		ID:        bookingModel.ID,
+		EventID:   bookingModel.EventID,
+		UserID:    bookingModel.UserID,
+		SeatID:    bookingModel.SeatID,
+		Status:    bookingModel.Status,
+		CreatedAt: bookingModel.CreatedAt,
+		UpdatedAt: bookingModel.UpdatedAt,
 	}
 
 	return booking, nil
