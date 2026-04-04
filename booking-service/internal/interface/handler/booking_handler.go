@@ -33,7 +33,6 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 	}
 
 	res := dto.CreateBookingResponse{
-		ID:     booking.ID,
 		Status: booking.Status,
 	}
 
