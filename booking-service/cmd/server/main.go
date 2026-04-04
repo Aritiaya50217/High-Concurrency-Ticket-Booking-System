@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/config"
@@ -27,5 +28,5 @@ func main() {
 
 	router := router.SetupRouter(handlerBooking)
 
-	router.Run(":8080")
+	router.Run(fmt.Sprintf(":%d", cfg.App.Port))
 }

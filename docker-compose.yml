@@ -2,13 +2,30 @@ version: "3.9"
 
 services:
 
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "808:8080"
+    volumes:
+      - ./user-service/configs:/app/configs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # kafka:
+      #   condition: service_started
+    restart: always
+
+
   booking-service:
     build:
       context: ./booking-service
       dockerfile: Dockerfile
     container_name: booking-service
     ports:
-      - "8080:8080"
+      - "8081:8081"
     volumes:
       - ./booking-service/configs:/app/configs
     depends_on:

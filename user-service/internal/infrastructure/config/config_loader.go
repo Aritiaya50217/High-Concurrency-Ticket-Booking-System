@@ -1,6 +1,10 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 type Config struct {
 	App struct {
@@ -21,6 +25,11 @@ type Config struct {
 		Brokers            []string `yaml:"brokers"`
 		TopicBookingCreate string   `yaml:"topic_booking_created"`
 	} `yaml:"kafka"`
+
+	JWT struct {
+		Secret      string
+		ExpireHours int
+	}
 }
 
 func LoadConfig(path string) (*Config, error) {
@@ -35,4 +44,8 @@ func LoadConfig(path string) (*Config, error) {
 	}
 
 	return &cfg, nil
+}
+
+func (c *Config) JWTExpireDuration() time.Duration {
+	return time.Duration(c.JWT.ExpireHours) * time.Hour
 }
