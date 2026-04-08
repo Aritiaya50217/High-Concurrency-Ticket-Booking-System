@@ -32,8 +32,9 @@ func (r *UserRepository) FindByEmail(email string) (*entity.Users, error) {
 	}
 
 	user := &entity.Users{
-		ID:    userModel.ID,
-		Email: userModel.Email,
+		ID:       userModel.ID,
+		Email:    userModel.Email,
+		Password: userModel.Password,
 	}
 
 	return user, nil

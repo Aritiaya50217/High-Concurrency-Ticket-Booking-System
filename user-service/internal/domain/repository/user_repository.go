@@ -6,4 +6,5 @@ type UserRepository interface {
 	Create(user *entity.Users) error
 	FindByEmail(email string) (*entity.Users, error)
 	FindByID(id uint) (*entity.Users, error)
+	// Register(email, password string) error
 }
