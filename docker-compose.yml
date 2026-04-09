@@ -34,7 +34,7 @@ services:
 
   postgres:
     image: postgres:15
-    container_name: booking-postgres
+    container_name: ticker-booking-system-postgres
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password123!
