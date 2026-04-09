@@ -19,7 +19,17 @@ func NewUserRepository(db *gorm.DB) repository.UserRepository {
 }
 
 func (r *UserRepository) Create(user *entity.Users) error {
-	return r.db.Create(user).Error
+	userModel := model.UsersModel{
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Password:  user.Password,
+	}
+	if err := r.db.Create(&userModel).Error; err != nil {
+		return err
+	}
+	user.ID = userModel.ID
+	return nil
 }
 
 func (r *UserRepository) FindByEmail(email string) (*entity.Users, error) {

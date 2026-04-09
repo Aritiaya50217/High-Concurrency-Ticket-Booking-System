@@ -18,6 +18,21 @@ func NewUserHandler(usecase *usecase.UserUsecase, jwtService *security.JWTServic
 	return &UserHandler{usecase: usecase, jwtService: jwtService}
 }
 
+func (h *UserHandler) Register(c *gin.Context) {
+	var req dto.RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		return
+	}
+
+	if err := h.usecase.Register(req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "successfully"})
+}
+
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 

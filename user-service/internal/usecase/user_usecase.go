@@ -7,6 +7,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/domain/entity"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/domain/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/security"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/interface/dto"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,20 +20,26 @@ func NewUserUsecase(repo repository.UserRepository, jwtService *security.JWTServ
 	return &UserUsecase{repo: repo, jwtService: jwtService}
 }
 
-// func (u *UserUsecase) Register(email, password string) error {
+func (u *UserUsecase) Register(req dto.RegisterRequest) error {
 
-// 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-// 	if err != nil {
-// 		return err
-// 	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
 
-// 	user := entity.Users{
-// 		Email:    email,
-// 		Password: string(hash),
-// 	}
+	user := entity.Users{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Password:  string(hash),
+	}
 
-// 	return u.repo.Create(&user)
-// }
+	if err := u.repo.Create(&user); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (u *UserUsecase) Login(email, password string) (*entity.Users, error) {
 

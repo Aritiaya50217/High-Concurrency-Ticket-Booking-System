@@ -11,6 +11,7 @@ func SetupRouter(h *handler.UserHandler, jwtService *security.JWTService) *gin.E
 	r := gin.Default()
 	api := r.Group("/api")
 	api.POST("/login", h.Login)
+	api.POST("/register", h.Register)
 
 	auth := api.Group("/")
 	auth.Use(middleware.AuthMiddleware(jwtService))
