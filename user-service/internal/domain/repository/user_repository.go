@@ -8,4 +8,5 @@ type UserRepository interface {
 	Create(user *entity.Users) error
 	FindByEmail(email string) (*entity.Users, error)
 	FindByID(id uint) (*entity.Users, error)
+	Profile(id uint) (*entity.Users, error)
 }

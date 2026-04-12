@@ -41,17 +41,34 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := h.usecase.Login(req.Email, req.Password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	token, err := h.jwtService.GenerateToken(user.ID)
+	token, err := h.usecase.Login(req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func (h *UserHandler) Profile(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	user, err := h.usecase.Profile(userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	res := dto.RegisterResponse{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+	}
+
+	c.JSON(http.StatusOK, res)
 }

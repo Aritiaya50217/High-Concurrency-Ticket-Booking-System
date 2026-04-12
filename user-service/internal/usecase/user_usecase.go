@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/domain/entity"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/domain/repository"
@@ -41,28 +40,36 @@ func (u *UserUsecase) Register(req dto.RegisterRequest) error {
 	return nil
 }
 
-func (u *UserUsecase) Login(email, password string) (*entity.Users, error) {
+func (u *UserUsecase) Login(email, password string) (string, error) {
 
 	user, err := u.repo.FindByEmail(email)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if user == nil {
-		return nil, errors.New("user not found")
+		return "", errors.New("user not found")
 	}
-
-	fmt.Println("DB password:", user.Password)
-	fmt.Println("Input password:", password)
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		fmt.Println("bcrypt error:", err)
-		return nil, errors.New("invalid email or password")
+		return "", errors.New("invalid email or password")
 	}
 
-	return user, nil
-}
+	token, err := u.jwtService.GenerateToken(user.ID)
+	if err != nil {
+		return "", err
+	}
 
+	return token, nil
+}
 func (u *UserUsecase) ValidateToken(tokenStr string) (uint, error) {
 	return u.jwtService.ValidateToken(tokenStr)
+}
+
+func (u *UserUsecase) Profile(id uint) (*entity.Users, error) {
+	user, err := u.repo.Profile(id)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

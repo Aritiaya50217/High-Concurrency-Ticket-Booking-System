@@ -65,3 +65,20 @@ func (r *UserRepository) FindByID(id uint) (*entity.Users, error) {
 	}
 	return user, nil
 }
+
+func (r *UserRepository) Profile(id uint) (*entity.Users, error) {
+	var userModel model.UsersModel
+
+	if err := r.db.Where("id = ?", id).First(&userModel).Error; err != nil {
+		return nil, err
+	}
+
+	user := &entity.Users{
+		ID:        userModel.ID,
+		FirstName: userModel.FirstName,
+		LastName:  userModel.LastName,
+		Email:     userModel.Email,
+	}
+
+	return user, nil
+}

@@ -17,31 +17,41 @@ func NewJWTService(secretKey string, expire time.Duration) *JWTService {
 }
 
 func (j *JWTService) GenerateToken(userID uint) (string, error) {
+
+	claims := jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(j.expire).Unix(),
+		"exp":     claims.ExpiresAt,
 	})
-
 	return token.SignedString([]byte(j.secretKey))
 }
 
 func (j *JWTService) ValidateToken(tokenStr string) (uint, error) {
+
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
+
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+
 		return []byte(j.secretKey), nil
 	})
 
-	if err != nil || !token.Valid {
+	if err != nil {
+		return 0, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
 		return 0, errors.New("invalid token")
 	}
 
-	cliams, ok := token.Claims.(jwt.MapClaims)
+	userID, ok := claims["user_id"].(float64)
 	if !ok {
-		return 0, errors.New("invalid token claims")
-	}
-
-	userID, ok := cliams["user_id"].(float64)
-	if !ok {
-		return 0, errors.New("user_id not found in token")
+		return 0, errors.New("user_id not found")
 	}
 
 	return uint(userID), nil

@@ -10,11 +10,13 @@ import (
 func SetupRouter(h *handler.UserHandler, jwtService *security.JWTService) *gin.Engine {
 	r := gin.Default()
 	api := r.Group("/api")
-	api.POST("/login", h.Login)
-	api.POST("/register", h.Register)
+	{
+		api.POST("/login", h.Login)
+		api.POST("/register", h.Register)
 
-	auth := api.Group("/")
-	auth.Use(middleware.AuthMiddleware(jwtService))
-	// auth.GET("/profile",)
+		// middleware
+		api.Use(middleware.AuthMiddleware(jwtService))
+		api.GET("/profile/", h.Profile)
+	}
 	return r
 }
