@@ -54,7 +54,7 @@ jobs:
       - name: Build binary
         run: |
           cd user-service
-          go build -v -o service ./cmd
+          go build -v -o service ./cmd/server
 
   docker:
     name: Docker Build & Push
