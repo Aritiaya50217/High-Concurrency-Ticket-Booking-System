@@ -44,7 +44,7 @@ jobs:
         run: go test ./... -v
 
       - name: Build
-        run: go build -o app ./cmd/server
+        run: go build -o app ./cmd/user-server
 
   docker:
     needs: build-test
