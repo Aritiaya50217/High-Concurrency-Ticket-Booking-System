@@ -26,8 +26,6 @@ jobs:
         run: |
           echo "Root folder: $PWD"
           ls -la
-          echo "Service folder contents:"
-          ls -la service
 
       # ----------------------------
       # Setup Go
