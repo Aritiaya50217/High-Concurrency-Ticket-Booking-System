@@ -30,7 +30,7 @@ jobs:
       - name: Debug
         run: |
           pwd
-          ls -la
+          ls -la user-service
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -44,7 +44,7 @@ jobs:
         run: go test ./... -v
 
       - name: Build
-        run: go build -o app ./cmd/user-server
+        run: go build -o app ./cmd/server
 
   docker:
     needs: build-test
