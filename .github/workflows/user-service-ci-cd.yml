@@ -38,7 +38,7 @@ jobs:
       # Download dependencies
       - name: Go mod tidy & download
         run: |
-          cd service
+          cd user-service
           go mod tidy
           go mod download
 
@@ -46,14 +46,14 @@ jobs:
       # Run unit tests
       - name: Run unit tests
         run: |
-          cd service
+          cd user-service
           go test ./internal/... -v -race
 
       # ----------------------------
       # Build binary
       - name: Build binary
         run: |
-          cd service
+          cd user-service
           go build -v -o service ./cmd
 
   docker:
@@ -86,7 +86,7 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-          cd service
+          cd user-service
           docker build -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest .
           docker tag ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest \
                      ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
@@ -95,7 +95,7 @@ jobs:
       # Push Docker image
       - name: Push Docker image
         run: |
-          cd service
+          cd user-service
           docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
  
