@@ -11,9 +11,8 @@ on:
     paths:
       - "user-service/**"
 
-  workflow_dispatch:
-
 env:
+  SERVICE_NAME: user-service
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/user-service
 
 jobs:
@@ -22,7 +21,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: user-service 
+        working-directory: ${{ env.SERVICE_NAME }}
 
     steps:
       - uses: actions/checkout@v4
@@ -31,13 +30,13 @@ jobs:
         run: |
           echo "Current dir:"
           pwd
-          echo "Files:"
           ls -la
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache-dependency-path: ${{ env.SERVICE_NAME }}/go.sum
 
       - name: Install deps
         run: go mod tidy
@@ -54,7 +53,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: user-service
+        working-directory: ${{ env.SERVICE_NAME }}
 
     steps:
       - uses: actions/checkout@v4
@@ -66,6 +65,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build & Push
+        if: github.ref == 'refs/heads/main'
         run: |
           TAG=${{ github.sha }}
 
