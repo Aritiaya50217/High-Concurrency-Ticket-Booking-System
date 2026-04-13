@@ -1,74 +1,103 @@
-name: User Service CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
     branches: ["main"]
-    paths:
-      - "user-service/**"
-
   pull_request:
     branches: ["main"]
-    paths:
-      - "user-service/**"
-
-env:
-  SERVICE_NAME: user-service
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/user-service
+  workflow_dispatch:
 
 jobs:
   build-test:
+    name: Build & Test High-Concurrency-Ticket-Booking-System
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ${{ env.SERVICE_NAME }}
-
     steps:
-      - uses: actions/checkout@v4
+      # ----------------------------
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Debug
+      # ----------------------------
+      # Debug: ตรวจสอบไฟล์
+      - name: Debug service folder
         run: |
-          echo "Current dir:"
-          pwd
+          echo "Root folder: $PWD"
           ls -la
+          echo "Service folder contents:"
+          ls -la service
 
+      # ----------------------------
+      # Setup Go
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
-          cache-dependency-path: ${{ env.SERVICE_NAME }}/go.sum
+          go-version: "1.24.x"
 
-      - name: Install deps
-        run: go mod tidy
+      # ----------------------------
+      # Download dependencies
+      - name: Go mod tidy & download
+        run: |
+          cd service
+          go mod tidy
+          go mod download
 
-      - name: Run tests
-        run: go test ./... -v
+      # ----------------------------
+      # Run unit tests
+      - name: Run unit tests
+        run: |
+          cd service
+          go test ./internal/... -v -race
 
-      - name: Build
-        run: go build -o app ./cmd/server
+      # ----------------------------
+      # Build binary
+      - name: Build binary
+        run: |
+          cd service
+          go build -v -o service ./cmd
 
   docker:
+    name: Docker Build & Push
     needs: build-test
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ${{ env.SERVICE_NAME }}
-
     steps:
-      - uses: actions/checkout@v4
+      # ----------------------------
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Login Docker
+      # ----------------------------
+      # Debug Docker secrets
+      - name: Debug Docker username
+        run: echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}"
+
+      # ----------------------------
+      # Docker login
+      - name: Login Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build & Push
-        if: github.ref == 'refs/heads/main'
+      # ----------------------------
+      # Build Docker image
+      - name: Build Docker image
         run: |
-          TAG=${{ github.sha }}
+          cd service
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest \
+                     ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
 
-          docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:$TAG .
-          docker push $IMAGE_NAME:latest
-          docker push $IMAGE_NAME:$TAG
+      # ----------------------------
+      # Push Docker image
+      - name: Push Docker image
+        run: |
+          cd service
+          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
+ 
