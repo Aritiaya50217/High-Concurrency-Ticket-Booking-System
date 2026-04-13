@@ -29,8 +29,10 @@ jobs:
 
       - name: Debug
         run: |
+          echo "Current dir:"
           pwd
-          ls -la user-service
+          echo "Files:"
+          ls -la
 
       - name: Setup Go
         uses: actions/setup-go@v5
