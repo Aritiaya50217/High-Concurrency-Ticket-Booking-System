@@ -43,7 +43,12 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 	token, err := h.usecase.Login(req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		switch err.Error() {
+		case "invalid credentials":
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		}
 		return
 	}
 
