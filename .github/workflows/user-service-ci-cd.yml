@@ -97,5 +97,5 @@ jobs:
         run: |
           cd user-service
           docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }} 
  
