@@ -86,7 +86,6 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-          cd user-service
           docker build -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest .
           docker tag ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest \
                      ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
@@ -95,7 +94,5 @@ jobs:
       # Push Docker image
       - name: Push Docker image
         run: |
-          cd user-service
           docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }} 
- 
+          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
