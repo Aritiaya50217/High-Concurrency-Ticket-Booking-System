@@ -28,8 +28,8 @@ services:
       - "8081:8081"
     volumes:
       - ./booking-service/configs:/app/configs
-    # env_file:              
-    #   - ./booking-service/.env
+    env_file:              
+      - ./booking-service/.env
     depends_on:
       postgres:
         condition: service_healthy

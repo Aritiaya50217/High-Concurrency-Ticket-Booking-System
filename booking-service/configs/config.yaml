@@ -1,0 +1,15 @@
+app:
+  name: ${APP_NAME}
+  port: ${PORT}
+
+database:
+  host: ${DB_HOST}
+  port: ${DB_PORT}
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
+  name: ${DB_NAME}
+  sslmode: ${DB_SSLMODE}
+
+kafka:
+  brokers: ${KAFKA_BROKERS}
+  topic_booking_created: ${KAFKA_TOPIC_BOOKING_CREATED}
