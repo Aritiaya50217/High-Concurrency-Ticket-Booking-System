@@ -1,20 +1,19 @@
 app:
-  name: user-service
-  port: 8080
+  name: ${APP_NAME}
+  port: ${PORT}
 
 database:
-  host: postgres
-  port: 5432
-  user: admin
-  password: password123!
-  name: user_db
-  sslmode: disable
+  host: ${DB_HOST}
+  port: ${DB_PORT}
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
+  name: ${DB_NAME}
+  sslmode: ${DB_SSLMODE}
 
 kafka:
-  brokers:
-    - kafka:9092
-  topic_user_created: user.created
+  brokers: ${KAFKA_BROKERS}
+  topic_user_created: ${KAFKA_TOPIC_USER_CREATED}
 
 jwt:
-  secret: secret_key_123
-  expire_hours: 24 
+  secret: ${JWT_SECRET}
+  expire_hours: ${JWT_EXPIRE_HOURS}
