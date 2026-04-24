@@ -1,9 +1,14 @@
 package repository
 
-import "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
+)
 
 type BookingRepository interface {
-	Create(booking *entity.Booking) error
+	Create(ctx context.Context, booking *entity.Booking) error
+	WithTransaction(ctx context.Context, fn func(repo TxRepository) error) error
 	FindBySeatID(seatID uint) (*entity.Booking, error)
 	FindBookingByID(id uint) (*entity.Booking, error)
 	UpdateStatus(id uint, status string) error

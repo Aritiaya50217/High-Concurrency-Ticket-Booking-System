@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"context"
 	"errors"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 	domainRepo "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/database/model"
 	"gorm.io/gorm"
@@ -17,19 +19,19 @@ func NewBookingRepository(db *gorm.DB) domainRepo.BookingRepository {
 	return &bookingRepository{db: db}
 }
 
-func (r *bookingRepository) Create(booking *entity.Booking) error {
-	bookingModel := model.BookingModel{
-		UserID:  booking.UserID,
-		EventID: booking.EventID,
-		SeatID:  booking.SeatID,
-		Status:  booking.Status,
-	}
-	err := r.db.Create(&bookingModel).Error
-	if err != nil {
-		return err
-	}
+func (r *bookingRepository) Create(ctx context.Context, booking *entity.Booking) error {
+	return r.db.WithContext(ctx).Create(booking).Error
+}
 
-	return nil
+func (r *bookingRepository) WithTransaction(ctx context.Context, fn func(repo repository.TxRepository) error) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		txRepo := &txRepository{
+			seatRepo:    NewSeatRepository(tx),
+			bookingRepo: &bookingRepository{tx},
+			outboxRepo:  NewOutboxRepository(tx),
+		}
+		return fn(txRepo)
+	})
 }
 
 func (r *bookingRepository) FindBySeatID(seatID uint) (*entity.Booking, error) {
