@@ -1,10 +1,14 @@
-name: CI/CD Pipeline
+name: User Service CI/CD Pipeline
 
 on:
   push:
     branches: ["main"]
+    paths:
+      - 'user-service/**'
   pull_request:
     branches: ["main"]
+    paths:
+      - 'user-service/**'
   workflow_dispatch:
 
 jobs:
