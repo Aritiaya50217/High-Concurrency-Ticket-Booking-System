@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(bookingHandler *handler.BookingHandler, seatHandler *handler.SeatHandler, jwtService *security.JWTService) *gin.Engine {
+func SetupRouter(bookingHandler *handler.BookingHandler, jwtService *security.JWTService) *gin.Engine {
 	r := gin.Default()
 	api := r.Group("/api")
 	// middleware
@@ -19,8 +19,8 @@ func SetupRouter(bookingHandler *handler.BookingHandler, seatHandler *handler.Se
 	booking.GET("/:id", bookingHandler.FindBookingByID)
 	booking.GET("/search", bookingHandler.FindAll)
 
-	seat := api.Group("/seat")
-	seat.POST("/create", seatHandler.Create)
+	// seat := api.Group("/seat")
+	// seat.POST("/create", seatHandler.Create)
 
 	return r
 }

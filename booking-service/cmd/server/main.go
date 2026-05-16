@@ -66,30 +66,25 @@ func main() {
 	// Repository
 	// ----------------------------
 	repoBooking := repository.NewBookingRepository(db)
-	repoSeat := repository.NewSeatRepository(db)
 
 	// ----------------------------
 	// Usecase
 	// ----------------------------
 	bookingUsecase := usecase.NewBookingUsecase(
 		repoBooking,
-		repoSeat,
 		producer,
 		cfg.Kafka.TopicBookingCreated,
 	)
-
-	seatUsecase := usecase.NewSeatUsecase(repoSeat)
 
 	// ----------------------------
 	// Handler
 	// ----------------------------
 	bookingHandler := handler.NewBookingHandler(bookingUsecase)
-	seatHandler := handler.NewSeatHandler(seatUsecase)
 
 	// ----------------------------
 	// Router
 	// ----------------------------
-	r := router.SetupRouter(bookingHandler, seatHandler, jwtService)
+	r := router.SetupRouter(bookingHandler, jwtService)
 
 	// ----------------------------
 	// Worker (Kafka Consumer)

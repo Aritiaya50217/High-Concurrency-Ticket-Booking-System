@@ -1,7 +1,7 @@
 package repository
 
 type TxRepository interface {
-	Seat() SeatRepository
+	// Seat() SeatRepository
 	Booking() BookingRepository
 	Outbox() OutboxRepository
 }

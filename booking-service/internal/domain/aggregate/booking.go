@@ -1,19 +1,18 @@
 package aggregate
 
 import (
-	"errors"
 	"time"
 
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/event"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
 )
 
 type Booking struct {
-	ID     uint
-	UserID uint
-	SeatID uint
-	Status valueobject.BookingStatus
+	ID      uint
+	UserID  uint
+	EventID uint
+	SeatID  uint
+	Status  valueobject.BookingStatus
 
 	// Domain Events
 	events    []event.DomainEvent
@@ -21,25 +20,18 @@ type Booking struct {
 	UpdatedAt time.Time
 }
 
-func NewBooking(userID uint, seat *entity.Seat) (*Booking, error) {
+func NewBooking(userID uint, eventID uint, seatID uint) *Booking {
 	// business rule
-	if seat == nil {
-		return nil, errors.New("seat not found")
-	}
-
-	if err := seat.Book(); err != nil {
-		return nil, err
-	}
-
 	booking := &Booking{
-		UserID: userID,
-		SeatID: seat.ID,
-		Status: valueobject.BookingConfirmed,
+		UserID:  userID,
+		EventID: eventID,
+		SeatID:  seatID,
+		Status:  valueobject.BookingConfirmed,
 	}
 
-	booking.addEvent(event.NewBookingCreate(userID, seat.ID))
+	booking.addEvent(event.NewBookingCreated(userID, eventID, seatID))
 
-	return booking, nil
+	return booking
 
 }
 
