@@ -35,6 +35,21 @@ services:
         condition: service_healthy
     restart: always
 
+  event-service:
+    build:
+      context: ./event-service
+      dockerfile: Dockerfile
+    container_name: event-service
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./event-service/configs:/app/configs
+    env_file:              
+      - ./event-service/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
 
   postgres:
     image: postgres:15
