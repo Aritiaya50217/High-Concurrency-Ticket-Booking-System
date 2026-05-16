@@ -2,10 +2,9 @@ package usecase
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/aggregate"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
 )
@@ -21,75 +20,73 @@ func NewBookingUsecase(bookingRepo repository.BookingRepository, seatRepo reposi
 	return &BookingUsecase{bookingRepo: bookingRepo, seatRepo: seatRepo, producer: producer, topic: topic}
 }
 
-func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uint) (*entity.Booking, error) {
-	var result *entity.Booking
+func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uint) (*aggregate.Booking, error) {
+	var result *aggregate.Booking
+
 	err := u.bookingRepo.WithTransaction(ctx, func(repo repository.TxRepository) error {
-		seat, err := repo.Seat().FindByID(ctx, seatID)
+		seat, err := repo.Seat().FindByIDForUpdate(ctx, seatID)
 		if err != nil {
 			return err
 		}
 
-		if seat.Status != entity.SeatAvailable {
-			return errors.New("seat already taken")
-		}
-
-		booking := &entity.Booking{
-			UserID: userID,
-			// EventID: eventID,
-			SeatID: seatID,
-			Status: entity.SeatBooked,
+		booking, err := aggregate.NewBooking(userID, seat)
+		if err != nil {
+			return nil
 		}
 
 		if err := repo.Booking().Create(ctx, booking); err != nil {
 			return err
 		}
 
-		if err := repo.Seat().MarkBooked(ctx, seatID); err != nil {
-			return err
+		if err := repo.Seat().Update(ctx, seat); err != nil {
+			return nil
 		}
 
-		// publish kafka
-		payload, _ := json.Marshal(map[string]interface{}{
-			"event":      "BOOKING_CREATED",
-			"booking_id": result.ID,
-			"user_id":    result.UserID,
-			// "event_id":   result.EventID,
-			"seat_id": result.SeatID,
-		})
+		// for _, e := range booking.Events() {
+		// 	if e == nil {
+		// 		continue
+		// 	}
 
-		outbox := &entity.OutboxEvent{
-			EventType: "BOOKING_CREATED",
-			Payload:   string(payload),
-			Status:    "PENDING",
-		}
+		// 	payload, err := json.Marshal(e)
+		// 	if err != nil {
+		// 		return nil
+		// 	}
 
-		if err := repo.Outbox().Create(ctx, outbox); err != nil {
-			return err
-		}
+		// 	outbox := &entity.OutboxEvent{
+		// 		EventType: e.EventName(),
+		// 		Payload:   string(payload),
+		// 		Status:    "PENDING",
+		// 	}
+		// 	if err := repo.Outbox().Create(ctx, outbox); err != nil {
+		// 		return err
+		// 	}
+		// }
 
 		result = booking
 		return nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
+
 	return result, nil
 
 }
 
-func (u *BookingUsecase) Update(id uint, status string) (*entity.Booking, error) {
+func (u *BookingUsecase) Update(id uint, status string) (*aggregate.Booking, error) {
 	bookingID, err := u.bookingRepo.FindBookingByID(id)
 	if err != nil {
 		return nil, errors.New("get booking by ID not found")
 	}
 
-	booking := &entity.Booking{
+	booking := &aggregate.Booking{
 		ID:     bookingID.ID,
 		UserID: bookingID.UserID,
-		Status: status,
+		// Status: status,
 	}
 
-	if err := u.bookingRepo.UpdateStatus(booking.ID, booking.Status); err != nil {
+	if err := u.bookingRepo.UpdateStatus(booking.ID, ""); err != nil {
 		return nil, errors.New("error : update status ")
 	}
 
@@ -108,7 +105,7 @@ func (u *BookingUsecase) Delete(id uint) error {
 	return nil
 }
 
-func (u *BookingUsecase) FindByID(id uint) (*entity.Booking, error) {
+func (u *BookingUsecase) FindByID(id uint) (*aggregate.Booking, error) {
 	bookingID, err := u.bookingRepo.FindBookingByID(id)
 	if err != nil {
 		return nil, errors.New("get booking by ID not found")
@@ -117,6 +114,6 @@ func (u *BookingUsecase) FindByID(id uint) (*entity.Booking, error) {
 	return bookingID, nil
 }
 
-func (u *BookingUsecase) Search(status string, offset, limit int) ([]entity.Booking, int64, error) {
+func (u *BookingUsecase) Search(status string, offset, limit int) ([]aggregate.Booking, int64, error) {
 	return u.bookingRepo.Search(status, offset, limit)
 }

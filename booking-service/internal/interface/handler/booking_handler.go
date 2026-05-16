@@ -40,7 +40,8 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 	}
 
 	res := dto.CreateBookingResponse{
-		Status: booking.Status,
+		ID:     booking.ID,
+		Status: string(booking.Status),
 	}
 
 	c.JSON(http.StatusCreated, res)
@@ -70,7 +71,7 @@ func (h *BookingHandler) UpdateBooking(c *gin.Context) {
 	res := dto.UpdateBookingResponse{
 		ID:     booking.ID,
 		UserID: booking.UserID,
-		Status: booking.Status,
+		Status: string(booking.Status),
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -137,7 +138,7 @@ func (h *BookingHandler) FindAll(c *gin.Context) {
 			UserID: booking.UserID,
 			// EventID: booking.EventID,
 			SeatID: booking.SeatID,
-			Status: booking.Status,
+			Status: string(booking.Status),
 		})
 	}
 

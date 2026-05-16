@@ -6,6 +6,7 @@ import (
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/application/usecase"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/dto"
 	"github.com/gin-gonic/gin"
 )
@@ -29,7 +30,7 @@ func (h *SeatHandler) Create(c *gin.Context) {
 	seat := entity.Seat{
 		// EventID:    req.EventID,
 		SeatNumber: req.SeatNumber,
-		Status:     entity.SeatAvailable,
+		Status:     string(valueobject.SeatAvailable),
 		Version:    1,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),

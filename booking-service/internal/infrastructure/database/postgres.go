@@ -63,6 +63,7 @@ func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 	if err := db.AutoMigrate(
 		&model.BookingModel{},
 		&model.SeatModel{},
+		// &model.OutboxEventModel{},
 	); err != nil {
 		return nil, fmt.Errorf("failed to auto-migrate: %w", err)
 	}
