@@ -14,3 +14,7 @@ kafka:
   brokers: ${KAFKA_BROKERS}
   topic_booking_created: ${KAFKA_TOPIC_BOOKING_CREATED}
   group_id: ${KAFKA_GROUP_ID}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expire_hours: ${JWT_EXPIRE_HOURS}

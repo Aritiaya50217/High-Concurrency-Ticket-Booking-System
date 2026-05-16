@@ -26,7 +26,14 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		return
 	}
 
-	booking, err := h.usecase.Create(c, req.UserID, req.EventID, req.SeatID)
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	}
+
+	user := userID.(uint)
+
+	booking, err := h.usecase.Create(c, user, req.EventID, req.SeatID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

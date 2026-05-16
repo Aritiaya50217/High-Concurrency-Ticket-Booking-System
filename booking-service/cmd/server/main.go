@@ -10,6 +10,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/database"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
 	repositoryBooking "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/repository"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/security"
 	handlerBooking "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/handler"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/router"
 	usecaseBooking "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/usecase"
@@ -39,6 +40,8 @@ func main() {
 	}
 
 	log.Println("App Port:", cfg.App.Port)
+
+	jwtService := security.NewJWTService(cfg.JWT.Secret, cfg.JWTExpireDuration())
 
 	// ----------------------------
 	// Database
@@ -83,7 +86,7 @@ func main() {
 	// ----------------------------
 	// Router
 	// ----------------------------
-	r := router.SetupRouter(bookingHandler)
+	r := router.SetupRouter(bookingHandler, jwtService)
 
 	// ----------------------------
 	// Worker (Kafka Consumer)
@@ -94,7 +97,7 @@ func main() {
 	// ----------------------------
 	// Run server
 	// ----------------------------
-	log.Println("🌐 Server running...")
+	log.Println("Server running...")
 	if err := r.Run(fmt.Sprintf(":%d", cfg.App.Port)); err != nil {
 		log.Fatal(err)
 	}
