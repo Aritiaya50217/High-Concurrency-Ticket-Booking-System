@@ -133,11 +133,11 @@ func (h *BookingHandler) FindAll(c *gin.Context) {
 	result := []dto.SearchBookingResponse{}
 	for _, booking := range bookings {
 		result = append(result, dto.SearchBookingResponse{
-			ID:      booking.ID,
-			UserID:  booking.UserID,
-			EventID: booking.EventID,
-			SeatID:  booking.SeatID,
-			Status:  booking.Status,
+			ID:     booking.ID,
+			UserID: booking.UserID,
+			// EventID: booking.EventID,
+			SeatID: booking.SeatID,
+			Status: booking.Status,
 		})
 	}
 

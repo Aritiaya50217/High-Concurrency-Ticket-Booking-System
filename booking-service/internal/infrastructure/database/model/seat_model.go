@@ -3,8 +3,8 @@ package model
 import "time"
 
 type SeatModel struct {
-	ID         uint `gorm:"primaryKey;autoIncrement"`
-	EventID    uint
+	ID uint `gorm:"primaryKey;autoIncrement"`
+	// EventID    uint
 	SeatNumber string
 	Status     string
 	Version    int // optimistic lock
@@ -13,5 +13,5 @@ type SeatModel struct {
 }
 
 func (SeatModel) TableName() string {
-	return "seat"
+	return "seats"
 }

@@ -9,11 +9,11 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/config"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/database"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
-	repositoryBooking "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/repository"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/security"
-	handlerBooking "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/handler"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/handler"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/router"
-	usecaseBooking "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/usecase"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/usecase"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/worker"
 	"github.com/joho/godotenv"
 )
@@ -65,28 +65,31 @@ func main() {
 	// ----------------------------
 	// Repository
 	// ----------------------------
-	repoBooking := repositoryBooking.NewBookingRepository(db)
-	repoSeat := repositoryBooking.NewSeatRepository(db)
+	repoBooking := repository.NewBookingRepository(db)
+	repoSeat := repository.NewSeatRepository(db)
 
 	// ----------------------------
 	// Usecase
 	// ----------------------------
-	bookingUsecase := usecaseBooking.NewBookingUsecase(
+	bookingUsecase := usecase.NewBookingUsecase(
 		repoBooking,
 		repoSeat,
 		producer,
 		cfg.Kafka.TopicBookingCreated,
 	)
 
+	seatUsecase := usecase.NewSeatUsecase(repoSeat)
+
 	// ----------------------------
 	// Handler
 	// ----------------------------
-	bookingHandler := handlerBooking.NewBookingHandler(bookingUsecase)
+	bookingHandler := handler.NewBookingHandler(bookingUsecase)
+	seatHandler := handler.NewSeatHandler(seatUsecase)
 
 	// ----------------------------
 	// Router
 	// ----------------------------
-	r := router.SetupRouter(bookingHandler, jwtService)
+	r := router.SetupRouter(bookingHandler, seatHandler, jwtService)
 
 	// ----------------------------
 	// Worker (Kafka Consumer)

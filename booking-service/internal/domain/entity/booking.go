@@ -9,9 +9,9 @@ const (
 )
 
 type Booking struct {
-	ID        uint
-	UserID    uint
-	EventID   uint
+	ID     uint
+	UserID uint
+	// EventID   uint
 	SeatID    uint
 	Status    string
 	CreatedAt time.Time

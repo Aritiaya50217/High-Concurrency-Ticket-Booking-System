@@ -41,7 +41,7 @@ func (r *bookingRepository) FindBySeatID(seatID uint) (*entity.Booking, error) {
 		return nil, err
 	}
 
-	return &entity.Booking{ID: bookingModel.ID, EventID: bookingModel.EventID, SeatID: bookingModel.SeatID, Status: bookingModel.Status}, nil
+	return &entity.Booking{ID: bookingModel.ID, SeatID: bookingModel.SeatID, Status: bookingModel.Status}, nil
 }
 
 func (r *bookingRepository) UpdateStatus(id uint, status string) error {
@@ -61,8 +61,8 @@ func (r *bookingRepository) FindBookingByID(id uint) (*entity.Booking, error) {
 	}
 
 	booking := &entity.Booking{
-		ID:        bookingModel.ID,
-		EventID:   bookingModel.EventID,
+		ID: bookingModel.ID,
+		// EventID:   bookingModel.EventID,
 		UserID:    bookingModel.UserID,
 		SeatID:    bookingModel.SeatID,
 		Status:    bookingModel.Status,
@@ -100,11 +100,11 @@ func (r *bookingRepository) Search(status string, offset, limit int) ([]entity.B
 
 	for _, m := range models {
 		bookings = append(bookings, entity.Booking{
-			ID:      m.ID,
-			UserID:  m.UserID,
-			SeatID:  m.SeatID,
-			EventID: m.EventID,
-			Status:  m.Status,
+			ID:     m.ID,
+			UserID: m.UserID,
+			SeatID: m.SeatID,
+			// EventID: m.EventID,
+			Status: m.Status,
 		})
 	}
 

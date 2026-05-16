@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS booking (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     -- user_id UUID NOT NULL,
-    event_id UUID NOT NULL,
+    -- event_id UUID NOT NULL,
     seat_id UUID NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

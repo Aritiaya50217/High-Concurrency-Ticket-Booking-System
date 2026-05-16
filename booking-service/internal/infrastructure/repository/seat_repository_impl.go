@@ -18,6 +18,10 @@ func NewSeatRepository(db *gorm.DB) repository.SeatRepository {
 	return &seatRepository{db: db}
 }
 
+func (r *seatRepository) Create(ctx context.Context, seat *entity.Seat) error {
+	return r.db.WithContext(ctx).Create(seat).Error
+}
+
 func (r *seatRepository) FindByID(ctx context.Context, id uint) (*entity.Seat, error) {
 	var m model.SeatModel
 	if err := r.db.WithContext(ctx).First(&m, id).Error; err != nil {
@@ -25,8 +29,8 @@ func (r *seatRepository) FindByID(ctx context.Context, id uint) (*entity.Seat, e
 	}
 
 	return &entity.Seat{
-		ID:         m.ID,
-		EventID:    m.EventID,
+		ID: m.ID,
+		// EventID:    m.EventID,
 		SeatNumber: m.SeatNumber,
 		Status:     m.Status,
 		Version:    m.Version,

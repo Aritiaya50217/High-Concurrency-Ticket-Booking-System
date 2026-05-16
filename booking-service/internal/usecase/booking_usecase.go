@@ -34,10 +34,10 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 		}
 
 		booking := &entity.Booking{
-			UserID:  userID,
-			EventID: eventID,
-			SeatID:  seatID,
-			Status:  entity.SeatBooked,
+			UserID: userID,
+			// EventID: eventID,
+			SeatID: seatID,
+			Status: entity.SeatBooked,
 		}
 
 		if err := repo.Booking().Create(ctx, booking); err != nil {
@@ -53,8 +53,8 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 			"event":      "BOOKING_CREATED",
 			"booking_id": result.ID,
 			"user_id":    result.UserID,
-			"event_id":   result.EventID,
-			"seat_id":    result.SeatID,
+			// "event_id":   result.EventID,
+			"seat_id": result.SeatID,
 		})
 
 		outbox := &entity.OutboxEvent{

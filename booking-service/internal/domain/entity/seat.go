@@ -9,8 +9,8 @@ const (
 )
 
 type Seat struct {
-	ID         uint
-	EventID    uint
+	ID uint
+	// EventID    uint
 	SeatNumber string
 	Status     string
 	Version    int // optimistic lock
