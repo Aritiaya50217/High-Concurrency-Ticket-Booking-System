@@ -38,7 +38,8 @@ func (w *BookingConsumer) Start(ctx context.Context) {
 func (w *BookingConsumer) handleBookingCreated(ctx context.Context, event dto.BookingCreatedEvent) {
 	log.Println("BOOKING_CREATED received: ", "booking_id=", event.BookingID,
 		"user_id=", event.UserID,
-		"event_id=", event.EventID)
+		// "event_id=", event.EventID,
+	)
 
 	log.Println("processed booking event:", event.BookingID)
 }
