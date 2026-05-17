@@ -1,0 +1,13 @@
+package repository
+
+import (
+	"context"
+
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/aggregate"
+)
+
+type EventRepository interface {
+	Create(ctx context.Context, event *aggregate.Event) error
+	FindByID(ctx context.Context, id uint) (*aggregate.Event, error)
+	Update(ctx context.Context, event *aggregate.Event) error
+}

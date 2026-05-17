@@ -1,15 +1,20 @@
 package model
 
-import "time"
+type EventModel struct {
+	ID    uint `gorm:"primaryKey;autoIncrement"`
+	Name  string
+	Seats []SeatModel `gorm:"foreignKey:EventID"`
+}
 
 type SeatModel struct {
-	ID         uint `gorm:"primaryKey;autoIncrement"`
+	ID         uint `gorm:"primaryKey"`
 	EventID    uint
 	SeatNumber string
 	Status     string
-	Version    int // optimistic lock
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+}
+
+func (EventModel) TableName() string {
+	return "events"
 }
 
 func (SeatModel) TableName() string {

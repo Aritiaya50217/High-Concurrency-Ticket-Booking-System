@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/config"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/database/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -59,7 +60,10 @@ func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 	}
 
 	// migrate
-	if err := db.AutoMigrate(); err != nil {
+	if err := db.AutoMigrate(
+		&model.EventModel{},
+		&model.SeatModel{},
+	); err != nil {
 		return nil, fmt.Errorf("failed to auto-migrate: %w", err)
 	}
 
