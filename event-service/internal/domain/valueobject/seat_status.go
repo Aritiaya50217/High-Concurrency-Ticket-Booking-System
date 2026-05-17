@@ -6,6 +6,7 @@ const (
 	SeatAvailable SeatStatus = "AVAILABLE"
 	SeatReserved  SeatStatus = "RESERVED"
 	SeatBooked    SeatStatus = "BOOKED"
+	SeatDeleted   SeatStatus = "DELETED"
 )
 
 func (s SeatStatus) IsAvailable() bool {

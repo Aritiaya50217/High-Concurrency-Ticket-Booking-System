@@ -51,3 +51,17 @@ func (u *EventUsecase) ReserveSeat(ctx context.Context, eventID, seatID, userID 
 func (u *EventUsecase) HandleBookingCreated(ctx context.Context, event domainEvent.BookingCreated) error {
 	return u.ReserveSeat(ctx, event.EventID, event.SeatID, event.UserID)
 }
+
+func (u *EventUsecase) CreateSeats(ctx context.Context, eventID uint, seats []string) error {
+	event, err := u.repo.FindByID(ctx, eventID)
+	if err != nil {
+		return err
+	}
+
+	if err = event.CreateSeats(seats); err != nil {
+		return err
+	}
+
+	return u.repo.Update(ctx, event)
+
+}

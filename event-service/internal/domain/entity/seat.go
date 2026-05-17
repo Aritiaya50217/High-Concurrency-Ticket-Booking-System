@@ -8,6 +8,9 @@ import (
 
 var (
 	ErrSeatNotAvailable = errors.New("seat not available")
+	ErrSeatReserved     = errors.New("seat must be reserved before booking")
+	ErrSeatBooked       = errors.New("cannot release booked seat")
+	ErrSeatDeleted      = errors.New("cannot delete booked seat")
 )
 
 type Seat struct {
@@ -30,11 +33,30 @@ func (s *Seat) Reserve() error {
 	return nil
 }
 
-func (s *Seat) Book() {
+func (s *Seat) Book() error {
+	if s.Status != valueobject.SeatReserved {
+		return ErrSeatReserved
+	}
+
 	s.Status = valueobject.SeatBooked
+	return nil
 }
 
-// ว่าง , cancelled
-func (s *Seat) Release() {
+// ว่าง
+func (s *Seat) Release() error {
+	if s.Status == valueobject.SeatBooked {
+		return ErrSeatBooked
+	}
+
 	s.Status = valueobject.SeatAvailable
+	return nil
+}
+
+func (s *Seat) Deleted() error {
+	if s.Status == valueobject.SeatBooked {
+		return ErrSeatDeleted
+	}
+
+	s.Status = valueobject.SeatDeleted
+	return nil
 }
