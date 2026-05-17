@@ -8,6 +8,7 @@ import (
 
 type EventRepository interface {
 	Create(ctx context.Context, event *aggregate.Event) error
-	FindByID(ctx context.Context, id uint) (*aggregate.Event, error)
+	WithTransaction(ctx context.Context, fn func(repo EventRepository) error) error
 	Update(ctx context.Context, event *aggregate.Event) error
+	FindByIDForUpdate(ctx context.Context, eventID uint) (*aggregate.Event, error)
 }

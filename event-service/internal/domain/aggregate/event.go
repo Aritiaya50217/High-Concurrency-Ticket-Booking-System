@@ -46,20 +46,26 @@ func (e *Event) ReserveSeat(seatID uint) error {
 	return ErrSeatNotFound
 }
 
-func (e *Event) ReleaseSeat(seatID uint) {
+func (e *Event) ReleaseSeat(seatID uint) error {
 	for _, seat := range e.Seats {
-		if seat.ID == seatID {
-			seat.Release()
-			return
+		if seat.ID != seatID {
+			continue
 		}
+		seat.Release()
+
+		return nil
 	}
+	return ErrSeatNotFound
 }
 
-func (e *Event) BookSeat(seatID uint) {
+func (e *Event) BookSeat(seatID uint) error {
 	for _, seat := range e.Seats {
-		if seat.ID == seatID {
-			seat.Book()
-			return
+		if seat.ID != seatID {
+			continue
 		}
+		seat.Book()
+		return nil
 	}
+
+	return ErrSeatNotFound
 }

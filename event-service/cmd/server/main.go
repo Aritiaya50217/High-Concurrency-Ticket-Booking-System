@@ -12,6 +12,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/security"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/interface/handler"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/interface/router"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/worker"
 	"github.com/joho/godotenv"
 
 	infraRepo "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/repository"
@@ -57,6 +58,17 @@ func main() {
 	eventUsecase := usecase.NewEventUsecase(eventRepo, messageRepo)
 
 	eventHandler := handler.NewEventHandler(eventUsecase)
+
+	// ----------------
+	// Kafka Consumer
+	// ----------------
+	consumer := kafkaInfra.NewConsumer([]string{"localhost:9092"}, "booking.created", "event-service")
+
+	bookingCosumer := worker.NewBookingCreatedConsumer(consumer, eventUsecase)
+
+	go bookingCosumer.Start()
+
+	log.Println("Kafka consumer started")
 
 	r := router.SetRouter(eventHandler, jwtService)
 
