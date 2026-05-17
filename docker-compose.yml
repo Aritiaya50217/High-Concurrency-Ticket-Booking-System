@@ -35,13 +35,14 @@ services:
         condition: service_healthy
     restart: always
 
+
   event-service:
     build:
       context: ./event-service
       dockerfile: Dockerfile
     container_name: event-service
     ports:
-      - "8081:8081"
+      - "8082:8082"
     volumes:
       - ./event-service/configs:/app/configs
     env_file:              
