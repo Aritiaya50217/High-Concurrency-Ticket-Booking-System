@@ -38,15 +38,15 @@ services:
 
   ticket-service:
     build:
-      context: ./event-service
+      context: ./ticket-service
       dockerfile: Dockerfile
-    container_name: event-service
+    container_name: ticket-service
     ports:
       - "8082:8082"
     volumes:
-      - ./event-service/configs:/app/configs
+      - ./ticket-service/configs:/app/configs
     env_file:              
-      - ./event-service/.env
+      - ./ticket-service/.env
     depends_on:
       postgres:
         condition: service_healthy

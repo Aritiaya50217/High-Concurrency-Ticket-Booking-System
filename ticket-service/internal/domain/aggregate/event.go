@@ -17,7 +17,6 @@ type Event struct {
 	ID          uint
 	Name        string
 	IsCancelled bool
-	Version     int
 	Seats       []*entity.Seat
 }
 

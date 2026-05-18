@@ -121,8 +121,8 @@ func (r *eventRepository) FindByIDForUpdate(ctx context.Context, eventID uint) (
 		ID:   eventModel.ID,
 		Name: eventModel.Name,
 	}
-
-	for _, seat := range event.Seats {
+	
+	for _, seat := range eventModel.Seats {
 		event.Seats = append(event.Seats, &entity.Seat{
 			ID:         seat.ID,
 			EventID:    seat.EventID,
