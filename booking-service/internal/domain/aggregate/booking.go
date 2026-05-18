@@ -27,6 +27,7 @@ func NewBooking(userID uint, eventID uint, seatID uint) *Booking {
 		EventID: eventID,
 		SeatID:  seatID,
 		Status:  valueobject.BookingConfirmed,
+		events:  []event.DomainEvent{},
 	}
 
 	booking.addEvent(event.NewBookingCreated(userID, eventID, seatID))

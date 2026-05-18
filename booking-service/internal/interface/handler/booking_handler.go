@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/application/usecase"
@@ -24,14 +25,23 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		return
 	}
 
-	userID, exists := c.Get("user_id")
+	user, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 	}
 
-	user := userID.(uint)
+	userID := user.(uint)
 
-	booking, err := h.usecase.Create(c, user, req.EventID, req.SeatID)
+	token, exists := c.Get("token")
+	if !exists {
+		c.JSON(http.StatusUnauthorized,
+			gin.H{"error": "missing token"})
+		return
+	}
+
+	ctx := context.WithValue(c.Request.Context(), "token", token)
+
+	booking, err := h.usecase.Create(ctx, userID, req.EventID, req.SeatID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -3,14 +3,17 @@ package repository
 import "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 
 type txRepository struct {
-	// seatRepo    repository.SeatRepository
 	bookingRepo repository.BookingRepository
 	outboxRepo  repository.OutboxRepository
 }
 
-// func (t *txRepository) Seat() repository.SeatRepository {
-// 	return t.seatRepo
-// }
+func NewTxRepository(bookingRepo repository.BookingRepository, outboxRepo repository.OutboxRepository) repository.TxRepository {
+
+	return &txRepository{
+		bookingRepo: bookingRepo,
+		outboxRepo:  outboxRepo,
+	}
+}
 
 func (t *txRepository) Booking() repository.BookingRepository {
 	return t.bookingRepo

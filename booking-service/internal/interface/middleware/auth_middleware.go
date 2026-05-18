@@ -24,6 +24,7 @@ func AuthMiddleware(jwtService *security.JWTService) gin.HandlerFunc {
 		}
 
 		c.Set("user_id", userID)
+		c.Set("token", token)
 		c.Next()
 	}
 }

@@ -25,11 +25,10 @@ func (r *bookingRepository) Create(ctx context.Context, booking *aggregate.Booki
 
 func (r *bookingRepository) WithTransaction(ctx context.Context, fn func(repo repository.TxRepository) error) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		txRepo := &txRepository{
-			// seatRepo:    NewSeatRepository(tx),
-			bookingRepo: &bookingRepository{tx},
-			outboxRepo:  NewOutboxRepository(tx),
-		}
+		txRepo := NewTxRepository(
+			NewBookingRepository(tx),
+			NewOutboxRepository(tx),
+		)
 		return fn(txRepo)
 	})
 }

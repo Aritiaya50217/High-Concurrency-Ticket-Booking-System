@@ -24,15 +24,19 @@ type Config struct {
 	} `mapstructure:"database"`
 
 	Kafka struct {
-		Brokers            []string `mapstructure:"brokers"`
+		Brokers             []string `mapstructure:"brokers"`
 		TopicBookingCreated string   `mapstructure:"topic_booking_created"`
-		GroupID            string   `mapstructure:"group_id"`
+		GroupID             string   `mapstructure:"group_id"`
 	} `mapstructure:"kafka"`
 
 	JWT struct {
 		Secret      string `mapstructure:"secret"`
 		ExpireHours int    `mapstructure:"expire_hours"`
 	} `mapstructure:"jwt"`
+
+	Event struct {
+		BaseURL string `mapstructure:"base_event_url"`
+	}
 }
 
 func LoadConfig(path string) (*Config, error) {
