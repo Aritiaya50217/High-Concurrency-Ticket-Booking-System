@@ -7,7 +7,7 @@ import (
 )
 
 type OutboxRepository interface {
-	Create(ctx context.Context, event *entity.OutboxEvent) error
+	Create(ctx context.Context, outbox *entity.OutboxEvent) error
 	FindPending(ctx context.Context, limit int) ([]entity.OutboxEvent, error)
-	MarkProcessed(ctx context.Context, id string) error
+	MarkProcessed(ctx context.Context, id uint) error
 }

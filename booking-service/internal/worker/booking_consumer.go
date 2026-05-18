@@ -27,7 +27,7 @@ func (w *BookingConsumer) Start(ctx context.Context) {
 		}
 
 		switch event.Event {
-		case "BOOKING_CREATED":
+		case "booking.created":
 			w.handleBookingCreated(ctx, event)
 		default:
 			log.Println("unknown event : ", event.Event)
@@ -36,7 +36,7 @@ func (w *BookingConsumer) Start(ctx context.Context) {
 }
 
 func (w *BookingConsumer) handleBookingCreated(ctx context.Context, event dto.BookingCreatedEvent) {
-	log.Println("BOOKING_CREATED received: ", "booking_id=", event.BookingID,
+	log.Println("booking.created received: ", "booking_id=", event.BookingID,
 		"user_id=", event.UserID,
 		// "event_id=", event.EventID,
 	)

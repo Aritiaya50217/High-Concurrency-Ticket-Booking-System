@@ -36,11 +36,11 @@ func NewBooking(userID uint, eventID uint, seatID uint) *Booking {
 
 }
 
-func (b *Booking) Cancel() {
-	b.Status = valueobject.BookingCancelled
+// func (b *Booking) Cancel() {
+// 	b.Status = valueobject.BookingCancelled
 
-	b.addEvent(event.NewBookingCancelled(b.ID, b.UserID, b.SeatID))
-}
+// 	b.addEvent(event.NewBookingCancelled(b.ID, b.UserID, b.SeatID))
+// }
 
 func (b *Booking) Events() []event.DomainEvent {
 	return b.events

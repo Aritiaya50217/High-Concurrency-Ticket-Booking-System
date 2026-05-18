@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/aggregate"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
@@ -41,8 +42,8 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 	var result *aggregate.Booking
 
 	err := u.bookingRepo.WithTransaction(ctx, func(repo repository.TxRepository) error {
-		// business event
 		fmt.Println("STEP 3 create booking aggregate")
+
 		booking := aggregate.NewBooking(userID, eventID, seatID)
 		if booking == nil {
 			return errors.New("booking is nil")
@@ -69,17 +70,25 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 			if err != nil {
 				return err
 			}
+			fmt.Println("payload=", string(payload))
 
 			outbox := &entity.OutboxEvent{
-				EventType: e.EventName(),
-				Payload:   string(payload),
-				Status:    "PENDING",
+				EventType:   e.EventName(),
+				Payload:     string(payload),
+				Status:      entity.OutboxPending,
+				CreatedAt:   time.Now(),
+				ProcessedAt: time.Now(),
 			}
+			fmt.Printf("outbox=%+v\n", outbox)
+
 			if err := repo.Outbox().Create(ctx, outbox); err != nil {
 				fmt.Println("outbox fail:", err)
 				return err
 			}
 		}
+
+		// กัน publish ซ้ำ
+		booking.ClearEvents()
 
 		result = booking
 		return nil

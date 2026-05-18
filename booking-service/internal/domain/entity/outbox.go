@@ -2,11 +2,16 @@ package entity
 
 import "time"
 
+const (
+	OutboxPending = "PENDING"
+	OutboxSent    = "SENT"
+)
+
 type OutboxEvent struct {
-	ID          string
+	ID          uint
 	EventType   string
 	Payload     string
 	Status      string
 	CreatedAt   time.Time
-	ProcessedAt *time.Time
+	ProcessedAt time.Time
 }
