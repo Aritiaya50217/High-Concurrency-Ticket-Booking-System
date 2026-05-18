@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # build binary
-RUN go build -o event-service ./cmd/server
+RUN go build -o ticket-service ./cmd/server
 
 
 # ---------- runtime stage ----------
@@ -23,11 +23,11 @@ FROM alpine:latest
 WORKDIR /app
 
 # copy binary from builder
-COPY --from=builder /app/event-service .
+COPY --from=builder /app/ticket-service .
 
 # copy config folder
 COPY configs ./configs
 
 EXPOSE 8082
 
-CMD ["./event-service"]
+CMD ["./ticket-service"]

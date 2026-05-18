@@ -1,14 +1,14 @@
-name: Event Service CI/CD Pipeline
+name: Ticket Service CI/CD Pipeline
 
 on:
   push:
     branches: ["main"]
     paths:
-      - 'event-service/**'
+      - 'ticket-service/**'
   pull_request:
     branches: ["main"]
     paths:
-      - 'event-service/**'
+      - 'ticket-service/**'
   workflow_dispatch:
 
 jobs:
@@ -50,14 +50,14 @@ jobs:
       # Run unit tests
       - name: Run unit tests
         run: |
-          cd event-service
+          cd ticket-service
           go test ./internal/... -v -race
 
       # ----------------------------
       # Build binary
       - name: Build binary
         run: |
-          cd event-service
+          cd ticket-service
           go build -v -o service ./cmd/server
 
   docker:
@@ -90,7 +90,7 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest ./event-service
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest ./ticket-service
           docker tag ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest \
                     ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
 

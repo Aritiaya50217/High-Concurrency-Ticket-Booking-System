@@ -36,7 +36,7 @@ services:
     restart: always
 
 
-  event-service:
+  ticket-service:
     build:
       context: ./event-service
       dockerfile: Dockerfile
