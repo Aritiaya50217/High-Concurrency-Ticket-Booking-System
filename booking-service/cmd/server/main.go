@@ -68,6 +68,8 @@ func main() {
 	// ----------------------------
 	repoBooking := repository.NewBookingRepository(db)
 
+	repoOutbox := repository.NewOutboxRepository(db)
+
 	// ----------------------------
 	// External
 	// ----------------------------
@@ -96,6 +98,14 @@ func main() {
 	// Router
 	// ----------------------------
 	r := router.SetupRouter(bookingHandler, jwtService)
+
+	// ----------------------------
+	// Worker (Kafka Producer)
+	// ----------------------------
+	// polling outbox -> publish kafka
+	outboxWorker := worker.NewOutboxWorker(repoOutbox, producer, cfg.Kafka.TopicBookingCreated)
+
+	go outboxWorker.Start(ctx)
 
 	// ----------------------------
 	// Worker (Kafka Consumer)

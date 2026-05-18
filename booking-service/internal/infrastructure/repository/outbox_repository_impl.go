@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
@@ -40,9 +39,9 @@ func (r *outboxRepository) Create(ctx context.Context, outbox *entity.OutboxEven
 	return err
 }
 
-func (r *outboxRepository) FindPending(ctx context.Context, limit int) ([]entity.OutboxEvent, error) {
+func (r *outboxRepository) FindPending(ctx context.Context) ([]entity.OutboxEvent, error) {
 	var events []model.OutboxEventModel
-	err := r.db.WithContext(ctx).Where("status = ? ", "PENDING").Limit(limit).Find(&events).Error
+	err := r.db.WithContext(ctx).Where("status = ? ", "PENDING").Find(&events).Error
 	results := []entity.OutboxEvent{}
 	for _, e := range events {
 		results = append(results, entity.OutboxEvent{
@@ -58,11 +57,10 @@ func (r *outboxRepository) FindPending(ctx context.Context, limit int) ([]entity
 	return results, err
 }
 
-func (r *outboxRepository) MarkProcessed(ctx context.Context, id uint) error {
-	now := time.Now()
-	return r.db.WithContext(ctx).Model(&model.OutboxEventModel{}).
-		Where("id = ?", id).Updates(map[string]interface{}{
-		"status":       "PROCESSED",
-		"processed_at": now,
-	}).Error
+func (r *outboxRepository) Update(ctx context.Context, outbox *entity.OutboxEvent) error {
+	return r.db.WithContext(ctx).Model(&model.OutboxEventModel{}).Where("id=?", outbox.ID).
+		Updates(map[string]interface{}{
+			"status":       outbox.Status,
+			"processed_at": outbox.ProcessedAt,
+		}).Error
 }

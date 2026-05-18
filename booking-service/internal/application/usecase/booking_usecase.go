@@ -73,11 +73,10 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 			fmt.Println("payload=", string(payload))
 
 			outbox := &entity.OutboxEvent{
-				EventType:   e.EventName(),
-				Payload:     string(payload),
-				Status:      entity.OutboxPending,
-				CreatedAt:   time.Now(),
-				ProcessedAt: time.Now(),
+				EventType: e.EventName(),
+				Payload:   string(payload),
+				Status:    entity.OutboxPending,
+				CreatedAt: time.Now(),
 			}
 			fmt.Printf("outbox=%+v\n", outbox)
 
