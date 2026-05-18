@@ -2,11 +2,9 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/application/usecase"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/dto"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -47,108 +45,108 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 	c.JSON(http.StatusCreated, res)
 }
 
-func (h *BookingHandler) UpdateBooking(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 0)
+// func (h *BookingHandler) UpdateBooking(c *gin.Context) {
+// 	id, _ := strconv.ParseUint(c.Param("id"), 10, 0)
 
-	var req dto.UpdateBookingRequest
+// 	var req dto.UpdateBookingRequest
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+// 		return
+// 	}
 
-	if !utils.IsValidateStatus(req.Status) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid booking status"})
-		return
-	}
+// 	if !utils.IsValidateStatus(req.Status) {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid booking status"})
+// 		return
+// 	}
 
-	booking, err := h.usecase.Update(uint(id), req.Status)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+// 	booking, err := h.usecase.Update(uint(id), req.Status)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	res := dto.UpdateBookingResponse{
-		ID:     booking.ID,
-		UserID: booking.UserID,
-		Status: string(booking.Status),
-	}
+// 	res := dto.UpdateBookingResponse{
+// 		ID:     booking.ID,
+// 		UserID: booking.UserID,
+// 		Status: string(booking.Status),
+// 	}
 
-	c.JSON(http.StatusOK, res)
-}
+// 	c.JSON(http.StatusOK, res)
+// }
 
-func (h *BookingHandler) DeleteBooking(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 0)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
-		return
-	}
+// func (h *BookingHandler) DeleteBooking(c *gin.Context) {
+// 	id, err := strconv.ParseUint(c.Param("id"), 10, 0)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+// 		return
+// 	}
 
-	if err := h.usecase.Delete(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+// 	if err := h.usecase.Delete(uint(id)); err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "success"})
-}
+// 	c.JSON(http.StatusOK, gin.H{"message": "success"})
+// }
 
-func (h *BookingHandler) FindBookingByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 0)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
-		return
-	}
+// func (h *BookingHandler) FindBookingByID(c *gin.Context) {
+// 	id, err := strconv.ParseUint(c.Param("id"), 10, 0)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+// 		return
+// 	}
 
-	booking, err := h.usecase.FindByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, booking)
-}
+// 	booking, err := h.usecase.FindByID(uint(id))
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, booking)
+// }
 
-func (h *BookingHandler) FindAll(c *gin.Context) {
-	var req dto.SearchBookingRequest
-	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid query parameters"})
-		return
-	}
+// func (h *BookingHandler) FindAll(c *gin.Context) {
+// 	var req dto.SearchBookingRequest
+// 	if err := c.ShouldBindQuery(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid query parameters"})
+// 		return
+// 	}
 
-	// default values
-	if req.Offset <= 0 {
-		req.Offset = 1
-	}
+// 	// default values
+// 	if req.Offset <= 0 {
+// 		req.Offset = 1
+// 	}
 
-	if req.Limit <= 0 {
-		req.Limit = 10
-	}
+// 	if req.Limit <= 0 {
+// 		req.Limit = 10
+// 	}
 
-	offset := (req.Offset - 1) * req.Limit
+// 	offset := (req.Offset - 1) * req.Limit
 
-	bookings, total, err := h.usecase.Search(req.Status, offset, req.Limit)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+// 	bookings, total, err := h.usecase.Search(req.Status, offset, req.Limit)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	result := []dto.SearchBookingResponse{}
-	for _, booking := range bookings {
-		result = append(result, dto.SearchBookingResponse{
-			ID:     booking.ID,
-			UserID: booking.UserID,
-			// EventID: booking.EventID,
-			SeatID: booking.SeatID,
-			Status: string(booking.Status),
-		})
-	}
+// 	result := []dto.SearchBookingResponse{}
+// 	for _, booking := range bookings {
+// 		result = append(result, dto.SearchBookingResponse{
+// 			ID:     booking.ID,
+// 			UserID: booking.UserID,
+// 			// EventID: booking.EventID,
+// 			SeatID: booking.SeatID,
+// 			Status: string(booking.Status),
+// 		})
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": result,
-		"pagination": gin.H{
-			"offset": req.Offset,
-			"limit":  req.Limit,
-			"total":  total,
-		},
-	})
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"data": result,
+// 		"pagination": gin.H{
+// 			"offset": req.Offset,
+// 			"limit":  req.Limit,
+// 			"total":  total,
+// 		},
+// 	})
 
-}
+// }
