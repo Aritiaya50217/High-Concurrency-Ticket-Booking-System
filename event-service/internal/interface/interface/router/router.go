@@ -12,6 +12,7 @@ func SetRouter(eventHandeler *handler.EventHandler, jwtService *security.JWTServ
 	api := r.Group("/api")
 
 	seat := api.Group("/seat", authMiddleware.AuthMiddleware(jwtService))
+	seat.POST("/create", eventHandeler.CreateSeats)
 	seat.POST("/reserve", eventHandeler.ReserveSeat)
 	seat.POST("/release", eventHandeler.ReleaseSeat)
 

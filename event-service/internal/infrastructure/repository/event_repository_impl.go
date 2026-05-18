@@ -75,6 +75,19 @@ func (r *eventRepository) FindByID(ctx context.Context, id uint) (*aggregate.Eve
 
 func (r *eventRepository) Update(ctx context.Context, event *aggregate.Event) error {
 	for _, seat := range event.Seats {
+		if seat.ID == 0 {
+			if err := r.db.WithContext(ctx).Create(&model.SeatModel{
+				EventID:    event.ID,
+				SeatNumber: seat.SeatNumber,
+				Status:     string(seat.Status),
+				Version:    seat.Version,
+			}).Error; err != nil {
+				return err
+			}
+
+			continue
+
+		}
 		result := r.db.WithContext(ctx).Model(&model.SeatModel{}).Where("id=? and version=?", seat.ID, seat.Version).
 			Updates(map[string]interface{}{
 				"status":  seat.Status,

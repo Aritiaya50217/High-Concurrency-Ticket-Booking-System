@@ -17,6 +17,22 @@ func NewEventHandler(eventUsecase *usecase.EventUsecase, seatUsecase *usecase.Se
 	return &EventHandler{eventUsecase: eventUsecase, seatUsecase: seatUsecase}
 }
 
+func (h *EventHandler) CreateSeats(c *gin.Context) {
+	var req dto.CreateSeatRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		return
+	}
+
+	if err := h.eventUsecase.CreateSeats(c.Request.Context(), req.EventID, req.Seats); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "seats cretaed."})
+
+}
+
 func (h *EventHandler) ReserveSeat(c *gin.Context) {
 	var req dto.ReserveSeatRequest
 
