@@ -36,6 +36,16 @@ func (j *JWTService) ValidateToken(tokenStr string) (uint, error) {
 		return 0, errors.New("invalid token")
 	}
 
+	// check if the token has expired.
+	exp, ok := claims["exp"].(float64)
+	if !ok {
+		return 0, errors.New("token expiration mission.")
+	}
+
+	if time.Unix(int64(exp), 0).Before(time.Now()) {
+		return 0, errors.New("token expired")
+	}
+
 	userID, ok := claims["user_id"].(float64)
 	if !ok {
 		return 0, errors.New("user_id not found")

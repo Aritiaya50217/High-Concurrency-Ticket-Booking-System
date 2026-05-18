@@ -20,3 +20,7 @@ func (s SeatStatus) IsReserved() bool {
 func (s SeatStatus) IsBooked() bool {
 	return s == SeatBooked
 }
+
+func (s SeatStatus) IsDeleted() bool {
+	return s == SeatDeleted
+}

@@ -5,6 +5,7 @@ type SeatModel struct {
 	EventID    uint
 	SeatNumber string
 	Status     string
+	Version    int
 }
 
 func (SeatModel) TableName() string {

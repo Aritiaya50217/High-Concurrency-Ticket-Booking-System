@@ -9,11 +9,12 @@ import (
 )
 
 type EventHandler struct {
-	usecase *usecase.EventUsecase
+	eventUsecase *usecase.EventUsecase
+	seatUsecase  *usecase.SeatUsecase
 }
 
-func NewEventHandler(usecase *usecase.EventUsecase) *EventHandler {
-	return &EventHandler{usecase: usecase}
+func NewEventHandler(eventUsecase *usecase.EventUsecase, seatUsecase *usecase.SeatUsecase) *EventHandler {
+	return &EventHandler{eventUsecase: eventUsecase, seatUsecase: seatUsecase}
 }
 
 func (h *EventHandler) ReserveSeat(c *gin.Context) {
@@ -24,8 +25,36 @@ func (h *EventHandler) ReserveSeat(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint("user_id")
-	if err := h.usecase.ReserveSeat(c.Request.Context(), req.EventID, req.SeatID, userID); err != nil {
+	_, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if err := h.seatUsecase.Reserve(c.Request.Context(), req.EventID, req.SeatID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "seat resered"})
+
+}
+
+func (h *EventHandler) ReleaseSeat(c *gin.Context) {
+	var req dto.ReleaseSeatRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		return
+	}
+
+	_, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if err := h.seatUsecase.Release(c.Request.Context(), req.EventID, req.SeatID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

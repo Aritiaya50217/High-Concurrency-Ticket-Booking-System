@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/aggregate"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/entity"
@@ -27,13 +28,20 @@ func (r *eventRepository) Create(ctx context.Context, event *aggregate.Event) er
 		eventModel.Seats = append(eventModel.Seats, model.SeatModel{
 			SeatNumber: seat.SeatNumber,
 			Status:     string(seat.Status),
+			Version:    seat.Version,
 		})
 	}
+	if err := r.db.WithContext(ctx).Create(&eventModel).Error; err != nil {
+		return err
+	}
 
-	return r.db.WithContext(ctx).Create(&eventModel).Error
+	event.ID = eventModel.ID
+
+	return nil
+
 }
 
-func (r *eventRepository) WithTransaction(ctx context.Context, fn func(repo domainRepo.EventRepository) error) error {
+func (r *eventRepository) Transaction(ctx context.Context, fn func(repo domainRepo.EventRepository) error) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		txRepo := &eventRepository{db: tx}
 		return fn(txRepo)
@@ -58,6 +66,7 @@ func (r *eventRepository) FindByID(ctx context.Context, id uint) (*aggregate.Eve
 			EventID:    seat.EventID,
 			SeatNumber: seat.SeatNumber,
 			Status:     valueobject.SeatStatus(seat.Status),
+			Version:    seat.Version,
 		})
 	}
 
@@ -65,21 +74,50 @@ func (r *eventRepository) FindByID(ctx context.Context, id uint) (*aggregate.Eve
 }
 
 func (r *eventRepository) Update(ctx context.Context, event *aggregate.Event) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		for _, seat := range event.Seats {
-			if err := tx.Model(&model.SeatModel{}).Where("id=?", seat.ID).Update("status", string(seat.Status)).Error; err != nil {
-				return err
-			}
+	for _, seat := range event.Seats {
+		result := r.db.WithContext(ctx).Model(&model.SeatModel{}).Where("id=? and version=?", seat.ID, seat.Version).
+			Updates(map[string]interface{}{
+				"status":  seat.Status,
+				"version": seat.Version + 1},
+			)
+		if result.Error != nil {
+			return result.Error
 		}
-		return nil
-	})
+
+		if result.RowsAffected == 0 {
+			return errors.New("seat updated by another transaction")
+		}
+
+		seat.Version++
+	}
+	return nil
 }
 
 func (r *eventRepository) FindByIDForUpdate(ctx context.Context, eventID uint) (*aggregate.Event, error) {
-	var event aggregate.Event
+	var eventModel model.EventModel
+
 	err := r.db.WithContext(ctx).Clauses(clause.Locking{
 		Strength: "UPDATE",
-	}).Preload("Seats").First(&event, eventID).Error
+	}).Preload("Seats").First(&eventModel, eventID).Error
 
-	return &event, err
+	if err != nil {
+		return nil, err
+	}
+
+	event := &aggregate.Event{
+		ID:   eventModel.ID,
+		Name: eventModel.Name,
+	}
+
+	for _, seat := range event.Seats {
+		event.Seats = append(event.Seats, &entity.Seat{
+			ID:         seat.ID,
+			EventID:    seat.EventID,
+			SeatNumber: seat.SeatNumber,
+			Status:     valueobject.SeatStatus(seat.Status),
+			Version:    seat.Version,
+		})
+	}
+
+	return event, nil
 }
