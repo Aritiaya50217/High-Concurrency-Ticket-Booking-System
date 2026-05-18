@@ -16,5 +16,8 @@ func SetRouter(eventHandeler *handler.EventHandler, jwtService *security.JWTServ
 	seat.POST("/reserve", eventHandeler.ReserveSeat)
 	seat.POST("/release", eventHandeler.ReleaseSeat)
 
+	event := api.Group("/event")
+	event.POST("/create", eventHandeler.CreateEvent)
+
 	return r
 }

@@ -33,6 +33,20 @@ func (h *EventHandler) CreateSeats(c *gin.Context) {
 
 }
 
+func (h *EventHandler) CreateEvent(c *gin.Context) {
+	var req dto.CreateEventRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		return
+	}
+	event, err := h.eventUsecase.Create(c.Request.Context(), req.Name)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"id": event.ID, "name": event.Name})
+}
+
 func (h *EventHandler) ReserveSeat(c *gin.Context) {
 	var req dto.ReserveSeatRequest
 

@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/entity"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/valueobject"
 )
 
 var (
@@ -36,11 +35,7 @@ func (e *Event) CreateSeats(seats []string) error {
 	}
 
 	for _, seat := range seats {
-		e.Seats = append(e.Seats, &entity.Seat{
-			EventID:    e.ID,
-			SeatNumber: seat,
-			Status:     valueobject.SeatAvailable,
-		})
+		e.Seats = append(e.Seats, entity.NewSeat(e.ID, seat))
 	}
 	return nil
 }
