@@ -12,5 +12,5 @@ type OutboxEventModel struct {
 }
 
 func (OutboxEventModel) TableName() string {
-	return "outbox_event"
+	return "outbox_events"
 }

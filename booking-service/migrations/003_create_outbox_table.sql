@@ -1,10 +1,9 @@
 CREATE TABLE outbox_events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    event_type VARCHAR(100) NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
-    status VARCHAR(20) DEFAULT 'PENDING',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    processed_at TIMESTAMP
+    status VARCHAR(50),
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE INDEX idx_outbox_status ON outbox_events(status);

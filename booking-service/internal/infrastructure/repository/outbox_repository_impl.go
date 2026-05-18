@@ -18,8 +18,8 @@ func NewOutboxRepository(db *gorm.DB) repository.OutboxRepository {
 	return &outboxRepository{db: db}
 }
 
-func (r *outboxRepository) Create(ctx context.Context, event *entity.OutboxEvent) error {
-	return r.db.WithContext(ctx).Create(event).Error
+func (r *outboxRepository) Create(ctx context.Context, outbox *entity.OutboxEvent) error {
+	return r.db.WithContext(ctx).Create(outbox).Error
 }
 
 func (r *outboxRepository) FindPending(ctx context.Context, limit int) ([]entity.OutboxEvent, error) {
