@@ -1,7 +1,9 @@
 package repository
 
-import "context"
+import (
+	"context"
+)
 
-type MessageRepository interface {
+type EventProducerRepository interface {
 	Publish(ctx context.Context, event any) error
 }

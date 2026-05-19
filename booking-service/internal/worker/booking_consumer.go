@@ -19,6 +19,7 @@ func NewBookingConsumer(c *kafka.Consumer) *BookingConsumer {
 
 func (w *BookingConsumer) Start(ctx context.Context) {
 	log.Println("booking consumer started ...")
+	
 	w.consumer.Start(ctx, func(msg []byte) {
 		var event dto.BookingCreatedEvent
 		if err := json.Unmarshal(msg, &event); err != nil {

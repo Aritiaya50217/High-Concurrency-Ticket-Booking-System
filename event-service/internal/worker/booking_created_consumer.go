@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/application/usecase"
 
@@ -23,6 +24,8 @@ func NewBookingCreatedConsumer(consumer *kafka.Consumer, usecase *usecase.EventU
 
 func (b *BookingCreatedConsumer) Start() {
 	b.consumer.Consume(context.Background(), func(data []byte) error {
+		log.Println("received message:", string(data))
+
 		var event domainEvent.BookingCreated
 
 		if err := json.Unmarshal(data, &event); err != nil {
@@ -30,6 +33,11 @@ func (b *BookingCreatedConsumer) Start() {
 		}
 		log.Printf("booking received : %+v", event)
 
-		return b.usecase.HandleBookingCreated(context.Background(), event)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		log.Println("calling usecase HandleBookingCreated")
+		
+		return b.usecase.HandleBookingCreated(ctx, event)
 	})
 }

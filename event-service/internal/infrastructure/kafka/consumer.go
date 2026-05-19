@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"log"
 
 	kafkago "github.com/segmentio/kafka-go"
 )
@@ -20,6 +21,8 @@ func NewConsumer(brokers []string, topic string, groupID string) *Consumer {
 }
 
 func (c *Consumer) Consume(ctx context.Context, handler func([]byte) error) {
+	log.Println("Kafka consumer started, waiting for messages...")
+
 	for {
 		message, err := c.reader.ReadMessage(ctx)
 		if err != nil {

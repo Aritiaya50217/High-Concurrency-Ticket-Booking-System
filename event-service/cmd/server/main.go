@@ -51,13 +51,16 @@ func main() {
 
 	eventRepo := infraRepo.NewEventRepository(db)
 
+	inboxRepo := infraRepo.NewInboxRepository(db)
+
 	seatUsecase := usecase.NewSeatUsecase(eventRepo)
 
 	producer := kafkaInfra.NewProducer([]string{"localhost:9092"}, "seat-reserved")
 
-	messageRepo := infraRepo.NewMessageRepository(producer)
+	eventProducerRepo := infraRepo.NewEventProducerRepository(producer)
 
-	eventUsecase := usecase.NewEventUsecase(eventRepo, messageRepo)
+
+	eventUsecase := usecase.NewEventUsecase(eventRepo, inboxRepo, eventProducerRepo)
 
 	eventHandler := handler.NewEventHandler(eventUsecase, seatUsecase)
 
