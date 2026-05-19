@@ -54,13 +54,12 @@ func (w *OutboxWorker) Start(ctx context.Context) {
 			// publish
 			err := w.producer.Publish(context.Background(), event.EventType, envelope)
 			if err != nil {
-				log.Println("kafka publish fails: ", err)
+				log.Printf("publish failed topic=%s payload=%s err=%v", event.EventType, event.Payload, err)
 				continue
 			}
-			now := time.Now()
 
 			event.Status = entity.OutboxSent
-			event.ProcessedAt = now
+			event.ProcessedAt = time.Now()
 
 			if err := w.repo.Update(context.Background(), &event); err != nil {
 				log.Println("update outbox fail: ", err)

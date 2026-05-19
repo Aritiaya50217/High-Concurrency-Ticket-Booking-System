@@ -12,6 +12,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
 	domainEvent "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/event"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/external/eventservice"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
 )
@@ -51,28 +52,23 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 				continue
 			}
 
-			log.Printf("EVENT RAW: %+v\n", e)
-
-			payloadBytes, marshalErr := json.Marshal(e)
-			if marshalErr != nil {
-				return fmt.Errorf("marshal event failed: %w", marshalErr)
+			payloadBytes, err := json.Marshal(e)
+			if err != nil {
+				return fmt.Errorf("marshal payload failed: %w", err)
 			}
 
 			if len(payloadBytes) == 0 || string(payloadBytes) == "null" || string(payloadBytes) == "{}" {
-				return errors.New("invalid domain event payload (empty struct)")
+				return errors.New("invalid domain event payload")
 			}
-
-			payloadStr := string(payloadBytes)
-			log.Println("payload =", payloadStr)
 
 			outbox := &entity.OutboxEvent{
 				EventType: e.EventName(),
-				Payload:   payloadStr,
+				Payload:   string(payloadBytes), // keep simple, no new struct
 				Status:    entity.OutboxPending,
 				CreatedAt: time.Now(),
 			}
 
-			log.Printf("OUTBOX CREATE: %+v\n", outbox)
+			log.Printf("outbox create: %+v\n", outbox)
 
 			if err := repo.Outbox().Create(ctx, outbox); err != nil {
 				return fmt.Errorf("outbox create failed: %w", err)
@@ -80,7 +76,6 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 		}
 
 		booking.ClearEvents()
-
 		result = booking
 		return nil
 	})
@@ -104,6 +99,11 @@ func (u *BookingUsecase) HandleSeatReserved(ctx context.Context, event domainEve
 
 	if booking == nil {
 		return errors.New("booking not found")
+	}
+
+	if booking.Status == valueobject.BookingConfirmed {
+		log.Println("booking already confirmed, skip")
+		return nil
 	}
 
 	// update state

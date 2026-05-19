@@ -41,24 +41,28 @@ func (r *outboxRepository) Create(ctx context.Context, outbox *entity.OutboxEven
 
 func (r *outboxRepository) FindPending(ctx context.Context) ([]entity.OutboxEvent, error) {
 	var events []model.OutboxEventModel
-	err := r.db.WithContext(ctx).Where("status = ? ", "PENDING").Find(&events).Error
+
+	if err := r.db.WithContext(ctx).Where("status = ? ", "PENDING").Find(&events).Error; err != nil {
+		return nil, err
+	}
+
 	results := []entity.OutboxEvent{}
 	for _, e := range events {
 		results = append(results, entity.OutboxEvent{
 			ID:          e.ID,
 			EventType:   e.EventType,
-			Payload:     "",
+			Payload:     string(e.Payload),
 			Status:      e.Status,
 			CreatedAt:   e.CreatedAt,
 			ProcessedAt: e.ProcessedAt,
 		})
 	}
 
-	return results, err
+	return results, nil
 }
 
 func (r *outboxRepository) Update(ctx context.Context, outbox *entity.OutboxEvent) error {
-	return r.db.WithContext(ctx).Model(&model.OutboxEventModel{}).Where("id=?", outbox.ID).
+	return r.db.WithContext(ctx).Model(&model.OutboxEventModel{}).Where("id = ?", outbox.ID).
 		Updates(map[string]interface{}{
 			"status":       outbox.Status,
 			"processed_at": outbox.ProcessedAt,
