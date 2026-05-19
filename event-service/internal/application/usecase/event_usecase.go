@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"strconv"
 
@@ -48,8 +49,12 @@ func (u *EventUsecase) ReserveSeat(ctx context.Context, eventID, seatID, userID 
 
 	// publish event (OUTBOX SIDE)
 	reservedEvent := domainEvent.NewSeatReserved(eventID, seatID, userID)
-
-	return u.eventProducer.Publish(ctx, reservedEvent)
+	data, err := json.Marshal(reservedEvent)
+	if err != nil {
+		log.Println("SeatReserved error : ", err)
+		return err
+	}
+	return u.eventProducer.Publish(ctx, "seat.reserved", data)
 }
 
 func (u *EventUsecase) HandleBookingCreated(ctx context.Context, event domainEvent.BookingCreated) error {

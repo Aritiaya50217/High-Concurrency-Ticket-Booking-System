@@ -55,10 +55,9 @@ func main() {
 
 	seatUsecase := usecase.NewSeatUsecase(eventRepo)
 
-	producer := kafkaInfra.NewProducer([]string{"localhost:9092"}, "seat-reserved")
+	producer := kafkaInfra.NewProducer([]string{"localhost:9092"}, "seat.reserved")
 
 	eventProducerRepo := infraRepo.NewEventProducerRepository(producer)
-
 
 	eventUsecase := usecase.NewEventUsecase(eventRepo, inboxRepo, eventProducerRepo)
 

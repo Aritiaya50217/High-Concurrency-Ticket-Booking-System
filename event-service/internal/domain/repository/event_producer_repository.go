@@ -5,5 +5,5 @@ import (
 )
 
 type EventProducerRepository interface {
-	Publish(ctx context.Context, event any) error
+	Publish(ctx context.Context, topic string, message []byte) error
 }

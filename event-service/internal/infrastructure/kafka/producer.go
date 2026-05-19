@@ -21,11 +21,14 @@ func NewProducer(brokers []string, topic string) *Producer {
 	return &Producer{writer: writer}
 }
 
-func (p *Producer) Publish(ctx context.Context, data any) error {
+func (p *Producer) Publish(ctx context.Context, topic string, data any) error {
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	return p.writer.WriteMessages(ctx, kafkago.Message{Value: payload})
+	return p.writer.WriteMessages(ctx, kafkago.Message{
+		Topic: topic,
+		Value: payload,
+	})
 }
