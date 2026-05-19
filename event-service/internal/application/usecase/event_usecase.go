@@ -78,8 +78,16 @@ func (u *EventUsecase) HandleBookingCreated(ctx context.Context, event domainEve
 			return err
 		}
 
+		log.Println("seat before: ", agg.Seats)
+
 		if err := agg.ReserveSeat(event.SeatID); err != nil {
 			log.Println("ReserveSeat error : ", err)
+			return err
+		}
+		
+		log.Println("seat after: ", agg.Seats)
+
+		if err := repo.Update(ctx, agg); err != nil {
 			return err
 		}
 

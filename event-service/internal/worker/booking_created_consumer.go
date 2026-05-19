@@ -40,12 +40,15 @@ func (b *BookingCreatedConsumer) Start() {
 
 		var event domainEvent.BookingCreated
 
-		if err := json.Unmarshal(data, &event); err != nil {
+		if err := json.Unmarshal(envelope.Data, &event); err != nil {
+			log.Println("unmarshal booking fail:", err)
 			return err
 		}
+		
 		log.Printf("booking received : %+v", event)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
 		defer cancel()
 
 		log.Println("calling usecase HandleBookingCreated")

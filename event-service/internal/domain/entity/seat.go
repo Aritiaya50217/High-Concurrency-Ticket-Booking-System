@@ -23,7 +23,7 @@ type Seat struct {
 }
 
 func NewSeat(eventID uint, seatNumber string) *Seat {
-	return &Seat{EventID: eventID, SeatNumber: seatNumber, Status: valueobject.SeatAvailable, Version: 1}
+	return &Seat{EventID: eventID, SeatNumber: seatNumber, Status: valueobject.SeatAvailable, Version: 0}
 }
 
 func (s *Seat) Reserve() error {
@@ -43,25 +43,3 @@ func (s *Seat) Release() error {
 	s.Status = valueobject.SeatAvailable
 	return nil
 }
-
-// func (s *Seat) Book() error {
-// 	if !s.Status.IsReserved() {
-// 		return ErrSeatReserved
-// 	}
-
-// 	s.Status = valueobject.SeatBooked
-// 	return nil
-// }
-
-// func (s *Seat) Delete() error {
-// 	if s.Status.IsDeleted() {
-// 		return nil
-// 	}
-
-// 	if s.Status.IsBooked() || s.Status.IsReserved() {
-// 		return ErrSeatDeleted
-// 	}
-
-// 	s.Status = valueobject.SeatDeleted
-// 	return nil
-// }

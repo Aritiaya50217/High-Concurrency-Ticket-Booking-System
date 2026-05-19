@@ -10,8 +10,9 @@ type BookingCreated struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func NewBookingCreated(userID, eventID, seatID uint) BookingCreated {
+func NewBookingCreated(bookingID, userID, eventID, seatID uint) BookingCreated {
 	return BookingCreated{
+		BookingID: bookingID,
 		UserID:    userID,
 		EventID:   eventID,
 		SeatID:    seatID,

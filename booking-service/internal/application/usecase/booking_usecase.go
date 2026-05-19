@@ -47,10 +47,21 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 		}
 
 		log.Println("booking id =", booking.ID)
-		
+
 		log.Printf("domain events: %+v\n", booking.Events())
 
 		fmt.Println("STEP 2 store outbox events")
+
+		booking.ClearEvents()
+		
+		booking.AddEvent(
+			domainEvent.NewBookingCreated(
+				booking.ID,
+				booking.UserID,
+				booking.EventID,
+				booking.SeatID,
+			),
+		)
 
 		for _, e := range booking.Events() {
 

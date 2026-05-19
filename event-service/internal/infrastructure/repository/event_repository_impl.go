@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/aggregate"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/entity"
@@ -84,18 +85,21 @@ func (r *eventRepository) Update(ctx context.Context, event *aggregate.Event) er
 			}).Error; err != nil {
 				return err
 			}
-
 			continue
-
 		}
-		result := r.db.WithContext(ctx).Model(&model.SeatModel{}).Where("id=? and version=?", seat.ID, seat.Version).
+
+		log.Println("update seat:", seat.ID, seat.Status, seat.Version)
+
+		result := r.db.WithContext(ctx).Model(&model.SeatModel{}).Where("id = ? and version = ?", seat.ID, seat.Version).
 			Updates(map[string]interface{}{
-				"status":  seat.Status,
+				"status":  string(seat.Status),
 				"version": seat.Version + 1},
 			)
 		if result.Error != nil {
 			return result.Error
 		}
+
+		log.Println("rows affected:", result.RowsAffected)
 
 		if result.RowsAffected == 0 {
 			return errors.New("seat updated by another transaction")
@@ -109,9 +113,18 @@ func (r *eventRepository) Update(ctx context.Context, event *aggregate.Event) er
 func (r *eventRepository) FindByIDForUpdate(ctx context.Context, eventID uint) (*aggregate.Event, error) {
 	var eventModel model.EventModel
 
-	err := r.db.WithContext(ctx).Clauses(clause.Locking{
-		Strength: "UPDATE",
-	}).Preload("Seats").First(&eventModel, eventID).Error
+	err := r.db.
+		WithContext(ctx).
+		Clauses(clause.Locking{
+			Strength: "UPDATE",
+		}).
+		Preload("Seats", func(db *gorm.DB) *gorm.DB {
+			return db.Clauses(clause.Locking{
+				Strength: "UPDATE",
+			})
+		}).
+		First(&eventModel, eventID).
+		Error
 
 	if err != nil {
 		return nil, err
@@ -121,8 +134,16 @@ func (r *eventRepository) FindByIDForUpdate(ctx context.Context, eventID uint) (
 		ID:   eventModel.ID,
 		Name: eventModel.Name,
 	}
-	
+
 	for _, seat := range eventModel.Seats {
+
+		log.Println(
+			"loaded seat:",
+			"id=", seat.ID,
+			"status=", seat.Status,
+			"version=", seat.Version,
+		)
+
 		event.Seats = append(event.Seats, &entity.Seat{
 			ID:         seat.ID,
 			EventID:    seat.EventID,

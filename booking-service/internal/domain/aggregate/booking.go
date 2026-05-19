@@ -31,7 +31,7 @@ func NewBooking(userID uint, eventID uint, seatID uint) *Booking {
 		events:  []event.DomainEvent{},
 	}
 
-	booking.addEvent(event.NewBookingCreated(userID, eventID, seatID))
+	booking.AddEvent(event.NewBookingCreated(booking.ID, userID, eventID, seatID))
 
 	return booking
 
@@ -45,10 +45,12 @@ func (b *Booking) ClearEvents() {
 	b.events = nil
 }
 
-func (b *Booking) addEvent(e event.DomainEvent) {
-	b.events = append(b.events, e)
+func (b *Booking) AddEvent(e event.DomainEvent) {
+	b.events = append(
+		b.events,
+		e,
+	)
 }
-
 func (b *Booking) Confirm() error {
 	if b.Status == valueobject.BookingConfirmed {
 		return nil
@@ -60,7 +62,7 @@ func (b *Booking) Confirm() error {
 
 	b.Status = valueobject.BookingConfirmed
 
-	b.addEvent(event.NewBookingConfirmed(b.ID, b.UserID, b.EventID, b.SeatID))
+	b.AddEvent(event.NewBookingConfirmed(b.ID, b.UserID, b.EventID, b.SeatID))
 
 	return nil
 }
