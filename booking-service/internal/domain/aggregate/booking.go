@@ -1,6 +1,7 @@
 package aggregate
 
 import (
+	"errors"
 	"time"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/event"
@@ -26,7 +27,7 @@ func NewBooking(userID uint, eventID uint, seatID uint) *Booking {
 		UserID:  userID,
 		EventID: eventID,
 		SeatID:  seatID,
-		Status:  valueobject.BookingConfirmed,
+		Status:  valueobject.BookingPending,
 		events:  []event.DomainEvent{},
 	}
 
@@ -35,12 +36,6 @@ func NewBooking(userID uint, eventID uint, seatID uint) *Booking {
 	return booking
 
 }
-
-// func (b *Booking) Cancel() {
-// 	b.Status = valueobject.BookingCancelled
-
-// 	b.addEvent(event.NewBookingCancelled(b.ID, b.UserID, b.SeatID))
-// }
 
 func (b *Booking) Events() []event.DomainEvent {
 	return b.events
@@ -52,4 +47,20 @@ func (b *Booking) ClearEvents() {
 
 func (b *Booking) addEvent(e event.DomainEvent) {
 	b.events = append(b.events, e)
+}
+
+func (b *Booking) Confirm() error {
+	if b.Status == valueobject.BookingConfirmed {
+		return nil
+	}
+
+	if b.Status != valueobject.BookingPending {
+		return errors.New("booking must be PENDING to confirm")
+	}
+
+	b.Status = valueobject.BookingConfirmed
+
+	b.addEvent(event.NewBookingConfirmed(b.ID, b.UserID, b.EventID, b.SeatID))
+
+	return nil
 }

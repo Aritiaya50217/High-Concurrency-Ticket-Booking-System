@@ -2,12 +2,14 @@ package worker
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"time"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/dto"
 )
 
 type OutboxWorker struct {
@@ -37,7 +39,20 @@ func (w *OutboxWorker) Start(ctx context.Context) {
 		}
 
 		for _, event := range events {
-			err := w.producer.Publish(context.Background(), event.EventType, event)
+
+			// validate payload
+			if !json.Valid([]byte(event.Payload)) {
+				log.Println("invalid playload :", event.Payload)
+				continue
+			}
+
+			envelope := dto.EventEnvelope{
+				Event: event.EventType,
+				Data:  json.RawMessage([]byte(event.Payload)),
+			}
+
+			// publish
+			err := w.producer.Publish(context.Background(), event.EventType, envelope)
 			if err != nil {
 				log.Println("kafka publish fails: ", err)
 				continue
@@ -55,23 +70,3 @@ func (w *OutboxWorker) Start(ctx context.Context) {
 		}
 	}
 }
-
-// func (w *OutboxWorker) process(ctx context.Context) {
-// 	events, err := w.repo.FindPending(ctx)
-// 	if err != nil {
-// 		log.Println("fetch outbox error : ", err)
-// 		return
-// 	}
-
-// 	for _, event := range events {
-// 		if err := w.producer.Publish(ctx, w.topic, json.RawMessage(event.Payload)); err != nil {
-// 			log.Println("kafka publish fail : ", err)
-// 			continue
-// 		}
-
-// 		if err := w.repo.MarkProcessed(ctx, event.ID); err != nil {
-// 			log.Println("mark processed fail : ", err)
-// 		}
-
-// 	}
-// }

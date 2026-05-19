@@ -110,7 +110,7 @@ func main() {
 	// ----------------------------
 	// Worker (Kafka Consumer)
 	// ----------------------------
-	bookingWorker := worker.NewBookingConsumer(consumer)
+	bookingWorker := worker.NewBookingConsumer(consumer, bookingUsecase)
 	go bookingWorker.Start(ctx)
 
 	// ----------------------------

@@ -8,9 +8,3 @@ type CreateBookingRequest struct {
 type UpdateBookingRequest struct {
 	Status string `json:"status"`
 }
-
-type SearchBookingRequest struct {
-	Offset int    `form:"offset"`
-	Limit  int    `form:"limit"`
-	Status string `form:"status"`
-}

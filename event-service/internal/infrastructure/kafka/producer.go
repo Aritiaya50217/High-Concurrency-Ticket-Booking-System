@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/segmentio/kafka-go"
 	kafkago "github.com/segmentio/kafka-go"
@@ -22,6 +23,9 @@ func NewProducer(brokers []string, topic string) *Producer {
 }
 
 func (p *Producer) Publish(ctx context.Context, topic string, data any) error {
+
+	log.Println("Publish to kafka :", data)
+
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return err

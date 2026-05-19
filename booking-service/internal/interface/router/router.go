@@ -14,10 +14,5 @@ func SetupRouter(bookingHandler *handler.BookingHandler, jwtService *security.JW
 	booking := api.Group("/booking")
 	booking.Use(middleware.AuthMiddleware(jwtService))
 	booking.POST("/create", bookingHandler.CreateBooking)
-	// booking.POST("/:id", bookingHandler.UpdateBooking)
-	// booking.DELETE("/:id", bookingHandler.DeleteBooking)
-	// booking.GET("/:id", bookingHandler.FindBookingByID)
-	// booking.GET("/search", bookingHandler.FindAll)
-
 	return r
 }

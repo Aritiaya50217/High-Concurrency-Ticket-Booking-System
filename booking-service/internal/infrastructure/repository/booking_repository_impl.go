@@ -7,6 +7,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/aggregate"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 	domainRepo "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/database/model"
 	"gorm.io/gorm"
 )
@@ -44,7 +45,7 @@ func (r *bookingRepository) FindBySeatID(seatID uint) (*aggregate.Booking, error
 }
 
 func (r *bookingRepository) UpdateStatus(id uint, status string) error {
-	return r.db.Model(&model.BookingModel{}).Where("id = ?", id).Update("status", status).Error
+	return r.db.Model(&model.BookingModel{}).Where("id = ? AND status = ?", id, "PENDING").Update("status", status).Error
 }
 
 func (r *bookingRepository) FindBookingByID(id uint) (*aggregate.Booking, error) {
@@ -71,41 +72,31 @@ func (r *bookingRepository) FindBookingByID(id uint) (*aggregate.Booking, error)
 	return booking, nil
 }
 
-func (r *bookingRepository) Delete(id uint) error {
-	return r.db.Where("id = ?", id).Delete(&model.BookingModel{}).Error
+func (r *bookingRepository) FindByEventAndSeat(ctx context.Context, eventID, seatID uint) (*aggregate.Booking, error) {
+	var bookingModel model.BookingModel
+
+	if err := r.db.WithContext(ctx).Where("event_id = ? AND ?", eventID, seatID).First(&bookingModel).Error; err != nil {
+		return nil, err
+	}
+
+	booking := &aggregate.Booking{
+		ID:      bookingModel.ID,
+		UserID:  bookingModel.UserID,
+		EventID: bookingModel.EventID,
+		SeatID:  bookingModel.SeatID,
+		Status:  valueobject.BookingStatus(bookingModel.Status),
+	}
+	return booking, nil
 }
 
-func (r *bookingRepository) Search(status string, offset, limit int) ([]aggregate.Booking, int64, error) {
-	var bookings []aggregate.Booking
-	var models []model.BookingModel
-	var total int64
-
-	query := r.db.Model(&model.BookingModel{})
-
-	if status != "" {
-		query = query.Where("status = ?", status)
+func (r *bookingRepository) Update(ctx context.Context, booking *aggregate.Booking) error {
+	bookingModel := model.BookingModel{
+		ID:      booking.ID,
+		UserID:  booking.UserID,
+		EventID: booking.EventID,
+		SeatID:  booking.SeatID,
+		Status:  string(booking.Status),
 	}
 
-	// total count
-	if err := query.Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-
-	// pagination
-	if err := query.Offset(offset).Limit(limit).Find(&models).Error; err != nil {
-		return nil, 0, err
-	}
-
-	for _, m := range models {
-		bookings = append(bookings, aggregate.Booking{
-			ID:     m.ID,
-			UserID: m.UserID,
-			SeatID: m.SeatID,
-			// EventID: m.EventID,
-			// Status: m.Status,
-		})
-	}
-
-	return bookings, total, nil
-
+	return r.db.WithContext(ctx).Model(&bookingModel).Where("id = ?", booking.ID).Updates(&bookingModel).Error
 }
