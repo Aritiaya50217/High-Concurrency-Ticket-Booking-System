@@ -41,7 +41,14 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 			return errors.New("booking is nil")
 		}
 
-		log.Printf("DOMAIN EVENTS: %+v\n", booking.Events())
+		if err := repo.Booking().Create(ctx, booking); err != nil {
+			fmt.Println("Booking Create error : ", err)
+			return err
+		}
+
+		log.Println("booking id =", booking.ID)
+		
+		log.Printf("domain events: %+v\n", booking.Events())
 
 		fmt.Println("STEP 2 store outbox events")
 

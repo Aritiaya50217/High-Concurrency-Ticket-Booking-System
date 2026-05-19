@@ -55,7 +55,7 @@ func main() {
 
 	seatUsecase := usecase.NewSeatUsecase(eventRepo)
 
-	producer := kafkaInfra.NewProducer([]string{"localhost:9092"}, "seat.reserved")
+	producer := kafkaInfra.NewProducer([]string{"localhost:9092"}, "seat-events")
 
 	eventProducerRepo := infraRepo.NewEventProducerRepository(producer)
 
@@ -66,7 +66,11 @@ func main() {
 	// ----------------
 	// Kafka Consumer
 	// ----------------
-	consumer := kafkaInfra.NewConsumer([]string{"localhost:9092"}, "booking.created", "event-service")
+	consumer := kafkaInfra.NewConsumer(
+		cfg.Kafka.Brokers,
+		"booking-events",
+		"event-service",
+	)
 
 	bookingCosumer := worker.NewBookingCreatedConsumer(consumer, eventUsecase)
 

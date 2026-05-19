@@ -59,7 +59,7 @@ func main() {
 
 	consumer := kafka.NewConsumer(
 		cfg.Kafka.Brokers,
-		cfg.Kafka.TopicBookingCreated,
+		cfg.Kafka.TopicSeatReserved,
 		cfg.Kafka.GroupID,
 	)
 

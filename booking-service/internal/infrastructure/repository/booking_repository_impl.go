@@ -75,7 +75,7 @@ func (r *bookingRepository) FindBookingByID(id uint) (*aggregate.Booking, error)
 func (r *bookingRepository) FindByEventAndSeat(ctx context.Context, eventID, seatID uint) (*aggregate.Booking, error) {
 	var bookingModel model.BookingModel
 
-	if err := r.db.WithContext(ctx).Where("event_id = ? AND ?", eventID, seatID).First(&bookingModel).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("event_id = ? AND seat_id = ?", eventID, seatID).First(&bookingModel).Error; err != nil {
 		return nil, err
 	}
 

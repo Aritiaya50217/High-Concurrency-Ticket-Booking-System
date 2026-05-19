@@ -26,6 +26,7 @@ type Config struct {
 	Kafka struct {
 		Brokers             []string `mapstructure:"brokers"`
 		TopicBookingCreated string   `mapstructure:"topic_booking_created"`
+		TopicSeatReserved   string   `mapstructure:"topic_seat_reserved"`
 		GroupID             string   `mapstructure:"group_id"`
 	} `mapstructure:"kafka"`
 

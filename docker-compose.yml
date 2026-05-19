@@ -74,7 +74,6 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
-
   postgres:
     image: postgres:15
     container_name: ticker-booking-system-postgres

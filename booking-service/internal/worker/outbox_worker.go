@@ -52,9 +52,9 @@ func (w *OutboxWorker) Start(ctx context.Context) {
 			}
 
 			// publish
-			err := w.producer.Publish(context.Background(), event.EventType, envelope)
+			err := w.producer.Publish(context.Background(), w.topic, envelope)
 			if err != nil {
-				log.Printf("publish failed topic=%s payload=%s err=%v", event.EventType, event.Payload, err)
+				log.Printf("publish failed topic=%s payload=%s err=%v", w.topic, event.Payload, err)
 				continue
 			}
 

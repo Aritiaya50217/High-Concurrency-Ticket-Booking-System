@@ -67,6 +67,7 @@ func (w *BookingConsumer) handleSeatReserved(ctx context.Context, event dto.Seat
 
 	seat := domainEvent.SeatReserved{
 		BookingID: event.BookingID,
+		EventID:   event.EventID,
 		SeatID:    event.SeatID,
 	}
 

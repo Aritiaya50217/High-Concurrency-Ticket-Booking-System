@@ -13,6 +13,7 @@ database:
 kafka:
   brokers: ${KAFKA_BROKERS}
   topic_booking_created: ${KAFKA_TOPIC_BOOKING_CREATED}
+  topic_seat_reserved: ${KAFKA_TOPIC_SEAT_RESERVED}
   group_id: ${KAFKA_GROUP_ID}
 
 jwt:
