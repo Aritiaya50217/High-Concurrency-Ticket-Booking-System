@@ -51,6 +51,7 @@ func (b *Booking) AddEvent(e event.DomainEvent) {
 		e,
 	)
 }
+
 func (b *Booking) Confirm() error {
 	if b.Status == valueobject.BookingConfirmed {
 		return nil
