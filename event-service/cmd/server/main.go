@@ -10,8 +10,8 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/database"
 	kafkaInfra "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/kafka"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/security"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/interface/handler"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/interface/router"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/handler"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/router"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/worker"
 	"github.com/joho/godotenv"
 

@@ -2,8 +2,8 @@ package router
 
 import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/security"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/interface/handler"
-	authMiddleware "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/interface/middleware"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/handler"
+	authMiddleware "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/middleware"
 	"github.com/gin-gonic/gin"
 )
 

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/application/usecase"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/interface/dto"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/interface/dto"
 	"github.com/gin-gonic/gin"
 )
 
