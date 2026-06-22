@@ -12,15 +12,17 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/kafka"
 
 	domainEvent "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/event"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/repository"
 )
 
 type BookingCreatedConsumer struct {
-	consumer *kafka.Consumer
-	usecase  *usecase.EventUsecase
+	consumer  *kafka.Consumer
+	usecase   *usecase.EventUsecase
+	inboxRepo repository.InboxRepository
 }
 
-func NewBookingCreatedConsumer(consumer *kafka.Consumer, usecase *usecase.EventUsecase) *BookingCreatedConsumer {
-	return &BookingCreatedConsumer{consumer: consumer, usecase: usecase}
+func NewBookingCreatedConsumer(consumer *kafka.Consumer, usecase *usecase.EventUsecase, inboxRepo repository.InboxRepository) *BookingCreatedConsumer {
+	return &BookingCreatedConsumer{consumer: consumer, usecase: usecase, inboxRepo: inboxRepo}
 }
 
 func (b *BookingCreatedConsumer) Start() {
@@ -44,15 +46,14 @@ func (b *BookingCreatedConsumer) Start() {
 			log.Println("unmarshal booking fail:", err)
 			return err
 		}
-		
+
 		log.Printf("booking received : %+v", event)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
 		defer cancel()
-
+		
 		log.Println("calling usecase HandleBookingCreated")
-
 		return b.usecase.HandleBookingCreated(ctx, event)
 	})
 }

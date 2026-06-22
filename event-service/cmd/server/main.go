@@ -72,7 +72,7 @@ func main() {
 		"event-service",
 	)
 
-	bookingCosumer := worker.NewBookingCreatedConsumer(consumer, eventUsecase)
+	bookingCosumer := worker.NewBookingCreatedConsumer(consumer, eventUsecase, inboxRepo)
 
 	go bookingCosumer.Start()
 

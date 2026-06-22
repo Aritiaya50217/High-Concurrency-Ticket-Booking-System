@@ -53,7 +53,6 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 		fmt.Println("STEP 2 store outbox events")
 
 		booking.ClearEvents()
-		
 		booking.AddEvent(
 			domainEvent.NewBookingCreated(
 				booking.ID,

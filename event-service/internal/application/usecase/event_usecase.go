@@ -84,7 +84,7 @@ func (u *EventUsecase) HandleBookingCreated(ctx context.Context, event domainEve
 			log.Println("ReserveSeat error : ", err)
 			return err
 		}
-		
+
 		log.Println("seat after: ", agg.Seats)
 
 		if err := repo.Update(ctx, agg); err != nil {
@@ -92,7 +92,10 @@ func (u *EventUsecase) HandleBookingCreated(ctx context.Context, event domainEve
 		}
 
 		// mark processed
-		return u.inboxRepo.MarkProcessed(ctx, bookingID, "booking.created")
+		if err := u.inboxRepo.MarkProcessed(ctx, bookingID, "booking.created"); err != nil {
+			return err
+		}
+		return nil
 	})
 
 	return err
