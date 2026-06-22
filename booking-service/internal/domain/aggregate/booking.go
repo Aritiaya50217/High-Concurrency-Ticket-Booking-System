@@ -9,11 +9,12 @@ import (
 )
 
 type Booking struct {
-	ID      uint
-	UserID  uint
-	EventID uint
-	SeatID  uint
-	Status  valueobject.BookingStatus
+	ID       uint
+	UserID   uint
+	EventID  uint
+	SeatID   uint
+	Status   valueobject.BookingStatus
+	ExpireAt time.Time
 
 	// Domain Events
 	events    []event.DomainEvent
@@ -24,11 +25,12 @@ type Booking struct {
 func NewBooking(userID uint, eventID uint, seatID uint) *Booking {
 	// business rule
 	booking := &Booking{
-		UserID:  userID,
-		EventID: eventID,
-		SeatID:  seatID,
-		Status:  valueobject.BookingPending,
-		events:  []event.DomainEvent{},
+		UserID:   userID,
+		EventID:  eventID,
+		SeatID:   seatID,
+		Status:   valueobject.BookingPending,
+		events:   []event.DomainEvent{},
+		ExpireAt: time.Now().Add(1 * time.Minute),
 	}
 
 	booking.AddEvent(event.NewBookingCreated(booking.ID, userID, eventID, seatID))
@@ -66,4 +68,8 @@ func (b *Booking) Confirm() error {
 	b.AddEvent(event.NewBookingConfirmed(b.ID, b.UserID, b.EventID, b.SeatID))
 
 	return nil
+}
+
+func (b *Booking) Expire() {
+	b.Status = valueobject.BookingExpired
 }

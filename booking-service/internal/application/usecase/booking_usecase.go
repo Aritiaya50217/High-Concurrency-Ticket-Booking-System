@@ -127,7 +127,7 @@ func (u *BookingUsecase) HandleSeatReserved(ctx context.Context, event domainEve
 	booking.Confirm()
 
 	// save
-	if err := u.bookingRepo.UpdateStatus(booking.ID, string(booking.Status)); err != nil {
+	if err := u.bookingRepo.UpdateStatus(ctx, booking.ID, string(booking.Status)); err != nil {
 		return err
 	}
 

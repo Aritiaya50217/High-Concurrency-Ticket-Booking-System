@@ -7,7 +7,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/aggregate"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 	domainRepo "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
+	valueobject "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/database/model"
 	"gorm.io/gorm"
 )
@@ -44,8 +44,8 @@ func (r *bookingRepository) FindBySeatID(seatID uint) (*aggregate.Booking, error
 	return &aggregate.Booking{}, nil
 }
 
-func (r *bookingRepository) UpdateStatus(id uint, status string) error {
-	return r.db.Model(&model.BookingModel{}).Where("id = ? AND status = ?", id, "PENDING").Update("status", status).Error
+func (r *bookingRepository) UpdateStatus(ctx context.Context, id uint, status string) error {
+	return r.db.WithContext(ctx).Model(&model.BookingModel{}).Where("id = ? AND status = ?", id, "PENDING").Update("status", status).Error
 }
 
 func (r *bookingRepository) FindBookingByID(id uint) (*aggregate.Booking, error) {
@@ -61,10 +61,9 @@ func (r *bookingRepository) FindBookingByID(id uint) (*aggregate.Booking, error)
 	}
 
 	booking := &aggregate.Booking{
-		ID:     bookingModel.ID,
-		UserID: bookingModel.UserID,
-		SeatID: bookingModel.SeatID,
-		// Status:    bookingModel.Status,
+		ID:        bookingModel.ID,
+		UserID:    bookingModel.UserID,
+		SeatID:    bookingModel.SeatID,
 		CreatedAt: bookingModel.CreatedAt,
 		UpdatedAt: bookingModel.UpdatedAt,
 	}
@@ -99,4 +98,25 @@ func (r *bookingRepository) Update(ctx context.Context, booking *aggregate.Booki
 	}
 
 	return r.db.WithContext(ctx).Model(&bookingModel).Where("id = ?", booking.ID).Updates(&bookingModel).Error
+}
+
+func (r *bookingRepository) FindExpiredBookings(ctx context.Context) ([]*aggregate.Booking, error) {
+	var bookingModels []model.BookingModel
+	if err := r.db.WithContext(ctx).Where("status = ?", valueobject.BookingPending).Where("expire_at <= NOW()").Find(&bookingModels).Error; err != nil {
+		return nil, err
+	}
+
+	bookings := make([]*aggregate.Booking, 0, len(bookingModels))
+
+	for _, m := range bookingModels {
+		bookings = append(bookings, &aggregate.Booking{
+			ID:       m.ID,
+			UserID:   m.UserID,
+			EventID:  m.EventID,
+			SeatID:   m.SeatID,
+			Status:   valueobject.BookingStatus(m.Status),
+			ExpireAt: m.ExpireAt,
+		})
+	}
+	return bookings, nil
 }

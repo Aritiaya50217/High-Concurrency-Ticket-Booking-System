@@ -114,6 +114,13 @@ func main() {
 	go bookingWorker.Start(ctx)
 
 	// ----------------------------
+	// Expiration Worker
+	// ----------------------------
+	expirationWorker := worker.NewBookingExpirationWorker(repoBooking, repoOutbox)
+
+	go expirationWorker.Start()
+
+	// ----------------------------
 	// Run server
 	// ----------------------------
 	log.Println("Server running...")

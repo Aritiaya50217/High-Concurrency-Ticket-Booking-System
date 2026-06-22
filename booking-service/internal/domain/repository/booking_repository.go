@@ -12,6 +12,7 @@ type BookingRepository interface {
 	WithTransaction(ctx context.Context, fn func(repo TxRepository) error) error
 	FindBySeatID(seatID uint) (*aggregate.Booking, error)
 	FindBookingByID(id uint) (*aggregate.Booking, error)
-	UpdateStatus(id uint, status string) error
+	UpdateStatus(ctx context.Context, id uint, status string) error
 	FindByEventAndSeat(ctx context.Context, eventID, seatID uint) (*aggregate.Booking, error)
+	FindExpiredBookings(ctx context.Context) ([]*aggregate.Booking, error)
 }

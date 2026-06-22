@@ -11,5 +11,5 @@ func NewBookingCancelled(bookingID, userID, seatID uint) BookingCancelled {
 }
 
 func (BookingCancelled) EventName() string {
-	return "BOOKING_CANCELLED"
+	return "booking.cancelled"
 }
