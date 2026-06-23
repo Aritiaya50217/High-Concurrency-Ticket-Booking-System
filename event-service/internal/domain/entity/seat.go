@@ -36,8 +36,8 @@ func (s *Seat) Reserve() error {
 }
 
 func (s *Seat) Release() error {
-	if !s.Status.IsAvailable() {
-		return ErrSeatNotAvailable
+	if !s.Status.IsReserved() {
+		return ErrSeatNotReserved
 	}
 
 	s.Status = valueobject.SeatAvailable

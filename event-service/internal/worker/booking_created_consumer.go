@@ -26,7 +26,7 @@ func NewBookingCreatedConsumer(consumer *kafka.Consumer, usecase *usecase.EventU
 }
 
 func (b *BookingCreatedConsumer) Start() {
-	b.consumer.Consume(context.Background(), func(data []byte) error {
+	b.consumer.Start(context.Background(), func(data []byte) error {
 		log.Println("received message:", string(data))
 
 		var envelope dto.EventEnvelope
@@ -36,24 +36,37 @@ func (b *BookingCreatedConsumer) Start() {
 			return err
 		}
 
-		if envelope.Event != "booking.created" {
+		switch envelope.Event {
+		case "booking.created":
+			var event domainEvent.BookingCreated
+
+			if err := json.Unmarshal(envelope.Data, &event); err != nil {
+				log.Println("unmarshal booking fail:", err)
+				return err
+			}
+
+			log.Printf("booking received : %+v", event)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+			defer cancel()
+
+			log.Println("calling usecase HandleBookingCreated")
+
+			return b.usecase.HandleBookingCreated(ctx, event)
+
+		case "booking.cancelled":
+			var event domainEvent.BookingCancelled
+
+			if err := json.Unmarshal(envelope.Data, &event); err != nil {
+				log.Println("unmarshal booking.cancelled fail:", err)
+				return err
+			}
+
+			return b.usecase.HandleBookingCancelled(context.Background(), event)
+
+		default:
 			return nil
 		}
-
-		var event domainEvent.BookingCreated
-
-		if err := json.Unmarshal(envelope.Data, &event); err != nil {
-			log.Println("unmarshal booking fail:", err)
-			return err
-		}
-
-		log.Printf("booking received : %+v", event)
-
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-
-		defer cancel()
-		
-		log.Println("calling usecase HandleBookingCreated")
-		return b.usecase.HandleBookingCreated(ctx, event)
 	})
 }

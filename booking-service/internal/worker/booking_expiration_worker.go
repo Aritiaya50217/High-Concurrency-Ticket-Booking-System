@@ -8,6 +8,7 @@ import (
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/entity"
 	domainEvent "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/event"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 )
@@ -35,6 +36,10 @@ func (w *BookingExpirationWorker) Start() {
 		}
 
 		for _, booking := range bookings {
+			if booking.Status != valueobject.BookingPending {
+				continue
+			}
+
 			log.Println("booking expired : ", booking.ID)
 			booking.Expire()
 
@@ -43,7 +48,8 @@ func (w *BookingExpirationWorker) Start() {
 				continue
 			}
 
-			cancelledEvent := domainEvent.NewBookingCancelled(booking.ID, booking.EventID, booking.SeatID)
+			// create event
+			cancelledEvent := domainEvent.NewBookingCancelled(booking.ID, booking.UserID, booking.SeatID, booking.EventID)
 			payloadBytes, err := json.Marshal(cancelledEvent)
 			if err != nil {
 				log.Println("marshal booking cancelled fail:", err)
@@ -51,13 +57,12 @@ func (w *BookingExpirationWorker) Start() {
 			}
 
 			outbox := &entity.OutboxEvent{
-				EventType:   cancelledEvent.EventName(),
-				Payload:     string(payloadBytes),
-				Status:      entity.OutboxPending,
-				CreatedAt:   time.Now(),
-				ProcessedAt: time.Now(),
+				EventType: cancelledEvent.EventName(),
+				Payload:   string(payloadBytes),
+				Status:    entity.OutboxPending,
+				CreatedAt: time.Now(),
 			}
-			
+
 			if err := w.outboxRepo.Create(ctx, outbox); err != nil {
 				log.Println("create outbox fail:", err)
 				continue
