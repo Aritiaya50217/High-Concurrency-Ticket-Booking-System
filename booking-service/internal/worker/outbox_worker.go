@@ -53,6 +53,7 @@ func (w *OutboxWorker) Start(ctx context.Context) {
 				}
 
 				envelope := dto.EventEnvelope{
+					ID:    event.MessageID,
 					Event: event.EventType,
 					Data:  json.RawMessage([]byte(event.Payload)),
 				}

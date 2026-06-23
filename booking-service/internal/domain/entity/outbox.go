@@ -14,4 +14,5 @@ type OutboxEvent struct {
 	Status      string
 	CreatedAt   time.Time
 	ProcessedAt time.Time
+	MessageID   string
 }

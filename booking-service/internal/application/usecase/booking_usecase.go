@@ -15,6 +15,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/external/eventservice"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
+	"github.com/google/uuid"
 )
 
 type BookingUsecase struct {
@@ -79,10 +80,12 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 			}
 
 			outbox := &entity.OutboxEvent{
-				EventType: e.EventName(),
-				Payload:   string(payloadBytes), // keep simple, no new struct
-				Status:    entity.OutboxPending,
-				CreatedAt: time.Now(),
+				MessageID:   uuid.NewString(),
+				EventType:   e.EventName(),
+				Payload:     string(payloadBytes), // keep simple, no new struct
+				Status:      entity.OutboxPending,
+				CreatedAt:   time.Now(),
+				ProcessedAt: time.Now(),
 			}
 
 			log.Printf("outbox create: %+v\n", outbox)
