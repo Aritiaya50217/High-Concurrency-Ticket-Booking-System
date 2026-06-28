@@ -1,130 +1,298 @@
-## High Concurrency Ticket Booking System (Event-Driven Microservices)
+# High Concurrency Ticket Booking System
 
-ระบบจองตั๋วแบบ High Concurrency โดยใช้ **Microservices + Kafka + Clean Architecture + DDD**  
-ออกแบบเพื่อรองรับ concurrent booking สูง พร้อม consistency แบบ event-driven + idempotent consumer
+A high-concurrency ticket booking platform built with **Microservices, Event-Driven Architecture, Kafka, Clean Architecture, and Domain-Driven Design (DDD)**.
 
----
-
-#### Architecture Overview
-
-ระบบแบ่งเป็น 2 services หลัก
-
-##### 1. Booking Service (Source of Truth)
-- รับ request จาก user
-- สร้าง booking
-- publish event ไป Kafka
-
-##### 2. Event Service (Seat Management)
-- consume event จาก Kafka (`booking.created`)
-- reserve seat
-- update database
-- ป้องกัน duplicate event (Inbox Pattern)
+The system is designed to handle concurrent seat reservations safely while maintaining consistency using **Inbox/Outbox Patterns**, **database locking**, and **idempotent event processing**.
 
 ---
 
-#### Architecture Pattern
+## Architecture Overview
 
-##### Clean Architecture
+The system consists of two main microservices:
 
----
+### Booking Service
 
-#### Layers:
-- interface: handler / router
-- usecase: business logic
-- domain: entity + aggregate + rules
-- infrastructure: DB / Kafka / external system
+Responsible for booking lifecycle management.
 
----
+Responsibilities:
 
-#### Domain Driven Design (DDD)
+* Create booking requests
+* Manage booking expiration
+* Publish domain events through Outbox Pattern
+* Maintain booking state (`PENDING`, `CONFIRMED`, `CANCELLED`)
 
-##### Core Domain:
-- Aggregate: Event
-- Entity: Seat
-- Value Object: SeatStatus
-- Domain Event: BookingCreated, SeatReserved
+Acts as the **source of truth** for booking information.
 
 ---
 
-#### Key Features
+### Event Service
 
-##### High Concurrency Safe
-- PostgreSQL row lock (`SELECT ... FOR UPDATE`)
-- Prevent race condition on seat booking
+Responsible for seat management.
 
-##### Event Driven Architecture
-- Kafka-based async communication
-- Decoupled services
+Responsibilities:
 
-#### Event Flow
+* Consume booking events from Kafka
+* Reserve seats
+* Release expired seats
+* Prevent duplicate event processing using Inbox Pattern
+* Maintain seat consistency under high concurrency
 
-    User Request
-    ↓
-    Booking Service
-    ↓
-    Kafka (booking.created)
-    ↓
-    Event Service Consumer
-    ↓
-    HandleBookingCreated()
-    ↓
-    Reserve Seat (DB Lock)
-    ↓
-    Update Database
-    ↓
-    Inbox (processed_events)
+Acts as the **source of truth** for seat availability.
 
-#### Idempotency (Inbox Pattern)
+---
 
-ระบบใช้ตาราง processed_events เพื่อป้องกัน Kafka duplicate event
+## Architecture Patterns
 
-#### Process Logic:
-1. Check event_id in processed_events
-2. If exists → skip
-3. If not exists → process event
-4. Insert into processed_events
+### Clean Architecture
 
-#### Kafka Topics
+The application is organized into four layers:
 
-| Topic | Description |
-|------|-------------|
-| booking.created | Event จาก booking-service |
-| seat.reserved | Event หลังจองสำเร็จ |
+```text
+interface
+↓
+application
+↓
+domain
+↓
+infrastructure
+```
 
-#### Tech Stack
+### Layers
 
-- Go (Golang)
-- Gin
-- Kafka (segmentio/kafka-go)
-- PostgreSQL
-- GORM
-- Docker
-- Clean Architecture
-- DDD
+* **interface**
 
-#### Project Structure
+  * HTTP handlers
+  * Routers
+  * DTOs
+  * Middleware
 
-    internal/
-    ├── application
-    ├── domain
-    │    ├── aggregate
-    │    ├── entity
-    │    ├── event
-    │    ├── repository
-    │    └── valueobject
-    ├── infrastructure
-    │    ├── kafka
-    │    ├── database
-    │    ├── repository
-    ├── interface
-    └── worker
+* **application**
 
-#### How It Works
+  * Use cases
+  * Business workflows
 
-1. Booking service creates booking
-2. Event published to Kafka
-3. Event service consumes message
-4. Event is validated & checked (Inbox Pattern)
-5. Seat is locked using database row-level lock
-6. Seat status updated
-7. Event marked as processed
+* **domain**
+
+  * Aggregates
+  * Entities
+  * Value Objects
+  * Domain Events
+  * Repository interfaces
+
+* **infrastructure**
+
+  * PostgreSQL
+  * Kafka
+  * Repository implementations
+  * External services
+
+---
+
+## Domain Driven Design
+
+### Aggregate
+
+* Event
+
+### Entities
+
+* Seat
+* Booking
+
+### Value Objects
+
+* SeatStatus
+* BookingStatus
+
+### Domain Events
+
+* BookingCreated
+* BookingCancelled
+* SeatReserved
+* SeatReleased
+
+---
+
+## High Concurrency Strategy
+
+### Row-Level Locking
+
+Prevents race conditions when multiple users attempt to reserve the same seat.
+
+```sql
+SELECT ... FOR UPDATE
+```
+
+---
+
+### Optimistic Locking
+
+Seat updates use version checking to prevent lost updates.
+
+```text
+WHERE id = ? AND version = ?
+```
+
+---
+
+### Unique Constraints
+
+Prevents duplicate seat creation.
+
+```text
+UNIQUE(event_id, seat_number)
+```
+
+---
+
+## Event-Driven Workflow
+
+### Booking Flow
+
+```text
+User
+↓
+Booking Service
+↓
+Create Booking (PENDING)
+↓
+Outbox Event Created
+↓
+Kafka (booking.created)
+↓
+Event Service Consumer
+↓
+Reserve Seat
+↓
+Seat Status = RESERVED
+```
+
+---
+
+### Booking Expiration Flow
+
+```text
+Booking Expiration Worker
+↓
+Find expired bookings
+↓
+Booking Status = CANCELLED
+↓
+Create booking.cancelled event
+↓
+Outbox Worker
+↓
+Kafka
+↓
+Event Service Consumer
+↓
+Release Seat
+↓
+Seat Status = AVAILABLE
+```
+
+---
+
+## Inbox Pattern
+
+Used to prevent duplicate event processing caused by Kafka's at-least-once delivery guarantee.
+
+### Process
+
+1. Receive Kafka event
+2. Check processed_events table
+3. If event already exists → skip
+4. Otherwise process event
+5. Store processed event record
+
+---
+
+## Outbox Pattern
+
+Ensures reliable event delivery between database transactions and Kafka.
+
+### Process
+
+1. Store event in outbox table within the same transaction
+2. Outbox worker polls pending events
+3. Publish events to Kafka
+4. Mark event as sent
+
+---
+
+## Kafka Topics
+
+| Topic             | Description                       |
+| ----------------- | --------------------------------- |
+| booking.created   | Booking successfully created      |
+| booking.cancelled | Booking expired or cancelled      |
+| seat.reserved     | Seat reserved successfully        |
+| seat.released     | Seat released and available again |
+
+---
+
+## Technology Stack
+
+* Golang
+* Gin
+* PostgreSQL
+* GORM
+* Apache Kafka
+* Docker
+* Clean Architecture
+* Domain Driven Design (DDD)
+
+---
+
+## Project Structure
+
+```text
+internal/
+├── application
+│   └── usecase
+├── domain
+│   ├── aggregate
+│   ├── entity
+│   ├── event
+│   ├── repository
+│   └── valueobject
+├── infrastructure
+│   ├── config
+│   ├── database
+│   ├── kafka
+│   ├── repository
+│   └── security
+├── interface
+│   ├── dto
+│   ├── handler
+│   ├── middleware
+│   └── router
+└── worker
+```
+
+---
+
+## Key Features
+
+* High concurrency seat booking
+* Event-driven microservices
+* Inbox Pattern
+* Outbox Pattern
+* Booking expiration handling
+* Optimistic locking
+* Row-level locking
+* Idempotent event processing
+* Decoupled services
+* Eventual consistency
+
+---
+
+## Future Improvements
+
+* Payment Service integration
+* Saga Pattern orchestration
+* Dead Letter Queue (DLQ)
+* Retry strategy
+* Distributed tracing
+* Prometheus and Grafana monitoring
+* Kubernetes deployment
