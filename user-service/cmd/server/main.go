@@ -5,15 +5,16 @@ import (
 	"log"
 	"os"
 
+	usecaseUser "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/application/usecase"
 	repositoryUser "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/security"
 	handlerUser "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/interface/handler"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/interface/router"
-	usecaseUser "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/usecase"
 	"github.com/joho/godotenv"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/config"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/database"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/metrics"
 )
 
 func main() {
@@ -47,6 +48,8 @@ func main() {
 	repositoryUser := repositoryUser.NewUserRepository(db)
 	usecaseUser := usecaseUser.NewUserUsecase(repositoryUser, jwtService)
 	handlerUser := handlerUser.NewUserHandler(usecaseUser, jwtService)
+
+	metrics.Register()
 
 	router := router.SetupRouter(handlerUser, jwtService)
 

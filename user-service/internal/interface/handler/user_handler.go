@@ -5,7 +5,7 @@ import (
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/security"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/interface/dto"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/usecase"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/application/usecase"
 	"github.com/gin-gonic/gin"
 )
 
