@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/metrics"
+
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/application/usecase"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/config"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/database"
@@ -36,6 +38,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	metrics.Register()
 
 	log.Println("App Port:", cfg.App.Port)
 

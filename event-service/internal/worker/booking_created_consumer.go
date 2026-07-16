@@ -13,6 +13,7 @@ import (
 
 	domainEvent "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/event"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/domain/repository"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/metrics"
 )
 
 type BookingCreatedConsumer struct {
@@ -29,10 +30,15 @@ func (b *BookingCreatedConsumer) Start() {
 	b.consumer.Start(context.Background(), func(data []byte) error {
 		log.Println("received message:", string(data))
 
+		metrics.KafkaMessagesConsumedTotal.Inc()
+
 		var envelope dto.EventEnvelope
 
 		if err := json.Unmarshal(data, &envelope); err != nil {
 			log.Println("unmarshal envelope fail:", err)
+
+			metrics.KafkaConsumerErrorsTotal.WithLabelValues("unmarshal").Inc()
+
 			return err
 		}
 
@@ -42,6 +48,9 @@ func (b *BookingCreatedConsumer) Start() {
 
 			if err := json.Unmarshal(envelope.Data, &event); err != nil {
 				log.Println("unmarshal booking fail:", err)
+
+				metrics.KafkaConsumerErrorsTotal.WithLabelValues("unmarshal").Inc()
+
 				return err
 			}
 
@@ -53,13 +62,22 @@ func (b *BookingCreatedConsumer) Start() {
 
 			log.Println("calling usecase HandleBookingCreated")
 
-			return b.usecase.HandleBookingCreated(ctx, event)
+			if err := b.usecase.HandleBookingCreated(ctx, event); err != nil {
+				metrics.KafkaConsumerErrorsTotal.WithLabelValues("usecase").Inc()
+				return err
+			}
+
+			metrics.KafkaMessagesProcessedTotal.Inc()
+			return nil
 
 		case "booking.cancelled":
 			var event domainEvent.BookingCancelled
 
 			if err := json.Unmarshal(envelope.Data, &event); err != nil {
 				log.Println("unmarshal booking.cancelled fail:", err)
+
+				metrics.KafkaConsumerErrorsTotal.WithLabelValues("unmarshal").Inc()
+
 				return err
 			}
 
@@ -67,7 +85,14 @@ func (b *BookingCreatedConsumer) Start() {
 
 			defer cancel()
 
-			return b.usecase.HandleBookingCancelled(ctx, event)
+			if err := b.usecase.HandleBookingCancelled(ctx, event); err != nil {
+				metrics.KafkaConsumerErrorsTotal.WithLabelValues("usecase").Inc()
+				return err
+			}
+
+			metrics.KafkaMessagesProcessedTotal.Inc()
+
+			return nil
 
 		default:
 			return nil
