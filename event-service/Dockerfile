@@ -1,5 +1,5 @@
 # ---------- build stage ----------
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # build binary
-RUN go build -o event-service ./cmd/server
+RUN CGO_ENABLED=0 go build -o event-service ./cmd/server
 
 
 # ---------- runtime stage ----------

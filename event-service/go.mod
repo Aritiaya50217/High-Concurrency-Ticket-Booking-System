@@ -1,6 +1,6 @@
 module github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service
 
-go 1.25.0
+go 1.26.3
 
 require (
 	github.com/gin-gonic/gin v1.12.0
@@ -9,7 +9,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.51
 	github.com/spf13/viper v1.21.0
 	gorm.io/driver/postgres v1.6.0
-	gorm.io/gorm v1.31.1
+	gorm.io/gorm v1.31.2
 )
 
 require (

@@ -17,6 +17,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/router"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/worker"
 	"github.com/joho/godotenv"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/metrics"
 )
 
 func main() {
@@ -39,6 +40,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	metrics.Register()
 
 	log.Println("App Port:", cfg.App.Port)
 
