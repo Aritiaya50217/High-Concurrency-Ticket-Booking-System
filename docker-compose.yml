@@ -112,8 +112,8 @@ services:
 
     volumes:
       - grafana-storage:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      # - ./grafana/provisioning:/etc/grafana/provisioning
+      # - ./grafana/dashboards:/var/lib/grafana/dashboards
  
 volumes:
   pgdata:
