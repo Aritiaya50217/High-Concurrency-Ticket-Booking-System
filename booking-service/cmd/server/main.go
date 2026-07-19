@@ -9,15 +9,14 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/application/usecase"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/config"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/database"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/external/eventservice"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/metrics"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/security"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/handler"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/interface/router"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/worker"
 	"github.com/joho/godotenv"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/metrics"
 )
 
 func main() {
@@ -74,22 +73,12 @@ func main() {
 	repoOutbox := repository.NewOutboxRepository(db)
 
 	// ----------------------------
-	// External
-	// ----------------------------
-	baseEventURL := os.Getenv("BASE_EVENT_URL")
-	if baseEventURL == "" {
-		baseEventURL = "http://localhost:8082"
-	}
-	eventClient := eventservice.NewSeatServiceClient(baseEventURL)
-
-	// ----------------------------
 	// Usecase
 	// ----------------------------
 	bookingUsecase := usecase.NewBookingUsecase(
 		repoBooking,
 		producer,
 		cfg.Kafka.TopicBookingCreated,
-		*eventClient,
 	)
 
 	// ----------------------------

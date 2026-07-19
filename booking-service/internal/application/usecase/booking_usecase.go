@@ -13,7 +13,6 @@ import (
 	domainEvent "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/event"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/external/eventservice"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
 	"github.com/google/uuid"
 )
@@ -22,11 +21,10 @@ type BookingUsecase struct {
 	bookingRepo repository.BookingRepository
 	producer    *kafka.Producer
 	topic       string
-	eventClient eventservice.SeatServiceClient
 }
 
-func NewBookingUsecase(bookingRepo repository.BookingRepository, producer *kafka.Producer, topic string, eventClient eventservice.SeatServiceClient) *BookingUsecase {
-	return &BookingUsecase{bookingRepo: bookingRepo, producer: producer, topic: topic, eventClient: eventClient}
+func NewBookingUsecase(bookingRepo repository.BookingRepository, producer *kafka.Producer, topic string) *BookingUsecase {
+	return &BookingUsecase{bookingRepo: bookingRepo, producer: producer, topic: topic}
 }
 
 func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uint) (*aggregate.Booking, error) {
