@@ -4,7 +4,7 @@ import (
 	"context"
 
 	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/usecase"
+	usecase "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/usecase"
 )
 
 type UserServer struct {
