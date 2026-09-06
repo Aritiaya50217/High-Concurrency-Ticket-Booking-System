@@ -15,7 +15,8 @@ RUN cd booking-service && go mod download
 COPY booking-service/ ./booking-service/
 COPY contracts/ ./contracts/
 
-# build binary
+# build
+WORKDIR /app/booking-service
 RUN go build -o booking-service ./cmd/server
 
 
