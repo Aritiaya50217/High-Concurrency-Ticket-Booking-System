@@ -1,0 +1,7 @@
+cd booking-service
+
+go mod edit -replace github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts=../contracts
+
+go mod tidy
+
+go build ./...
