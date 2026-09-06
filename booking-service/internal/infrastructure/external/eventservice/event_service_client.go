@@ -14,7 +14,7 @@ type SeatServiceClient struct {
 	baseURL string
 	client  *http.Client
 }
-
+ 
 func NewSeatServiceClient(baseURL string) *SeatServiceClient {
 	return &SeatServiceClient{baseURL: baseURL, client: &http.Client{
 		Timeout: 5 * time.Second,
