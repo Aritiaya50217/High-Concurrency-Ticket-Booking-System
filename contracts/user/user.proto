@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user";
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+}
+
+message GetUserRequest {
+  uint64 user_id = 1;
+}
+
+message GetUserResponse {
+  bool exists = 1;
+}

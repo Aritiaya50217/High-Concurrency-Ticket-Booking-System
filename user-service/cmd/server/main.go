@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 
 	repositoryUser "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/repository"
@@ -14,6 +15,12 @@ import (
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/config"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/database"
+
+	grpcServer "google.golang.org/grpc"
+
+	grpcHandler "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/grpc"
+
+	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user"
 )
 
 func main() {
@@ -48,8 +55,27 @@ func main() {
 	usecaseUser := usecaseUser.NewUserUsecase(repositoryUser, jwtService)
 	handlerUser := handlerUser.NewUserHandler(usecaseUser, jwtService)
 
-	router := router.SetupRouter(handlerUser, jwtService)
+	// grpc
+	server := grpcServer.NewServer()
+	userServer := grpcHandler.NewUserServer(usecaseUser)
+	userpb.RegisterUserServiceServer(server, userServer)
 
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("gRPC server running on :50051")
+
+	// gRPC server
+	go func() {
+		if err := server.Serve(lis); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	// HTTP server
+	router := router.SetupRouter(handlerUser, jwtService)
 	if err := router.Run(fmt.Sprintf(":%d", cfg.App.Port)); err != nil {
 		log.Fatal(err)
 	}
