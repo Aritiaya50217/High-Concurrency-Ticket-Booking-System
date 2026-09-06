@@ -5,13 +5,18 @@ WORKDIR /app
 
 RUN apk add --no-cache git
 
-# booking-service dependencies
+# copy go.mod
 COPY booking-service/go.mod booking-service/go.sum ./booking-service/
-COPY contracts/go.mod ./contracts/go.mod
 
-RUN cd booking-service && go mod download
+# copy contracts module
+COPY contracts/go.mod ./contracts/
+
+# download dependencies
+WORKDIR /app/booking-service
+RUN go mod download
 
 # copy source
+WORKDIR /app
 COPY booking-service/ ./booking-service/
 COPY contracts/ ./contracts/
 
@@ -26,7 +31,6 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/booking-service/booking-service .
-
 COPY --from=builder /app/booking-service/configs ./configs
 
 EXPOSE 8081
