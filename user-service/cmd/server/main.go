@@ -17,6 +17,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/database"
 
 	grpcServer "google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	grpcHandler "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/grpc"
 
@@ -59,6 +60,7 @@ func main() {
 	server := grpcServer.NewServer()
 	userServer := grpcHandler.NewUserServer(usecaseUser)
 	userpb.RegisterUserServiceServer(server, userServer)
+	reflection.Register(server)
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
