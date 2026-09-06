@@ -10,6 +10,7 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/config"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/database"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/external/eventservice"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/grpc"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/security"
@@ -80,6 +81,27 @@ func main() {
 	eventClient := eventservice.NewSeatServiceClient(baseEventURL)
 
 	// ----------------------------
+	// gRPC
+	// ----------------------------
+	userClient, err := grpc.NewUserServiceClient(cfg.GRPC.UserServiceAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer userClient.Close()
+
+	exists, err := userClient.GetUser(
+		context.Background(),
+		1,
+	)
+
+	if err != nil {
+		log.Printf("gRPC GetUser error: %v", err)
+	} else {
+		log.Printf("gRPC GetUser result: exists=%v", exists)
+	}
+
+	// ----------------------------
 	// Usecase
 	// ----------------------------
 	bookingUsecase := usecase.NewBookingUsecase(
@@ -87,6 +109,7 @@ func main() {
 		producer,
 		cfg.Kafka.TopicBookingCreated,
 		*eventClient,
+		userClient,
 	)
 
 	// ----------------------------

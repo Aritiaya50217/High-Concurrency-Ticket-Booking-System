@@ -38,9 +38,9 @@ type Config struct {
 	Event struct {
 		BaseURL string `mapstructure:"base_event_url"`
 	}
-	
+
 	GRPC struct {
-		UserServiceAddr *string `mapstructure:"user_service_addr"`
+		UserServiceAddr string `mapstructure:"user_service_addr"`
 	} `mapstructure:"grpc"`
 }
 

@@ -22,8 +22,8 @@ services:
 
   booking-service:
     build:
-      context: ./booking-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./booking-service/Dockerfile
     container_name: booking-service
     ports:
       - "8081:8081"

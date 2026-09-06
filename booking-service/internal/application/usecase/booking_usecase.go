@@ -23,10 +23,11 @@ type BookingUsecase struct {
 	producer    *kafka.Producer
 	topic       string
 	eventClient eventservice.SeatServiceClient
+	userService UserService
 }
 
-func NewBookingUsecase(bookingRepo repository.BookingRepository, producer *kafka.Producer, topic string, eventClient eventservice.SeatServiceClient) *BookingUsecase {
-	return &BookingUsecase{bookingRepo: bookingRepo, producer: producer, topic: topic, eventClient: eventClient}
+func NewBookingUsecase(bookingRepo repository.BookingRepository, producer *kafka.Producer, topic string, eventClient eventservice.SeatServiceClient, userService UserService) *BookingUsecase {
+	return &BookingUsecase{bookingRepo: bookingRepo, producer: producer, topic: topic, eventClient: eventClient, userService: userService}
 }
 
 func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uint) (*aggregate.Booking, error) {

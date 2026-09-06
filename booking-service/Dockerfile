@@ -1,19 +1,22 @@
 # ---------- build stage ----------
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 
-# install git (บาง lib ต้องใช้)
 RUN apk add --no-cache git
 
-# copy go mod
-COPY go.mod go.sum ./
-RUN go mod download
+# booking-service dependencies
+COPY booking-service/go.mod booking-service/go.sum ./booking-service/
+COPY contracts/go.mod ./contracts/go.mod
 
-# copy source code
-COPY . .
+RUN cd booking-service && go mod download
 
-# build binary
+# copy source
+COPY booking-service/ ./booking-service/
+COPY contracts/ ./contracts/
+
+# build
+WORKDIR /app/booking-service
 RUN go build -o booking-service ./cmd/server
 
 
@@ -22,11 +25,9 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# copy binary from builder
-COPY --from=builder /app/booking-service .
+COPY --from=builder /app/booking-service/booking-service .
 
-# copy config folder
-COPY configs ./configs
+COPY --from=builder /app/booking-service/configs ./configs
 
 EXPOSE 8081
 
