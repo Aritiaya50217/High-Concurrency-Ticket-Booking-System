@@ -17,6 +17,11 @@ import (
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/config"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/database"
+	grpcServer "google.golang.org/grpc"
+
+	grpcHandler "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/grpc"
+
+	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user"
 )
 
 func main() {
