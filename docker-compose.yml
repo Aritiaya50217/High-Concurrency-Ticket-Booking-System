@@ -4,11 +4,12 @@ services:
 
   user-service:
     build:
-      context: ./user-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./user-service/Dockerfile
     container_name: user-service
     ports:
       - "8080:8080"
+      - "50051:50051"
     volumes:
       - ./user-service/configs:/app/configs
     env_file:               
@@ -21,8 +22,8 @@ services:
 
   booking-service:
     build:
-      context: ./booking-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./booking-service/Dockerfile
     container_name: booking-service
     ports:
       - "8081:8081"

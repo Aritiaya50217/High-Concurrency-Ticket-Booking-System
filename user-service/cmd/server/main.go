@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 
 	usecaseUser "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/application/usecase"
@@ -14,7 +15,6 @@ import (
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/config"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/database"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/infrastructure/metrics"
 )
 
 func main() {
@@ -51,8 +51,28 @@ func main() {
 
 	metrics.Register()
 
-	router := router.SetupRouter(handlerUser, jwtService)
+	// grpc
+	server := grpcServer.NewServer()
+	userServer := grpcHandler.NewUserServer(usecaseUser)
+	userpb.RegisterUserServiceServer(server, userServer)
+	reflection.Register(server)
 
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("gRPC server running on :50051")
+
+	// gRPC server
+	go func() {
+		if err := server.Serve(lis); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	// HTTP server
+	router := router.SetupRouter(handlerUser, jwtService)
 	if err := router.Run(fmt.Sprintf(":%d", cfg.App.Port)); err != nil {
 		log.Fatal(err)
 	}

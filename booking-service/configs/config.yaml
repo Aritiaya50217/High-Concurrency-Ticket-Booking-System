@@ -22,3 +22,6 @@ jwt:
 
 ticket-service:
   base_event_url: ${BASE_EVENT_URL}
+
+grpc:
+  user_service_addr: ${USER_SERVICE_GRPC_ADDR}
