@@ -51,3 +51,4 @@ func (c *SeatServiceClient) ReserveSeat(ctx context.Context, token string, event
 	return nil
 
 }
+   
