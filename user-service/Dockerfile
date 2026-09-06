@@ -22,6 +22,7 @@ COPY user-service/ ./user-service/
 COPY contracts/ ./contracts/
 
 # build binary
+WORKDIR /app/user-service
 RUN go build -o user-service ./cmd/server
 
 
