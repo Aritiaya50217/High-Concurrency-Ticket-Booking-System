@@ -1,182 +1,306 @@
 package usecase_test
 
-// import (
-// 	"context"
-// 	"errors"
-// 	"testing"
+import (
+	"context"
+	"errors"
+	"testing"
 
-// 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/application/usecase"
-// 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/aggregate"
-// 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/event"
-// 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
-// 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/test/unit/mocks"
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/mock"
-// )
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/application/usecase"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/aggregate"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/event"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/external/eventservice"
+	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/test/unit/mocks"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
 
-// func TestCreateBookingSuccess(t *testing.T) {
-// 	ctx := context.Background()
+func TestCreateBookingSuccess(t *testing.T) {
+	ctx := context.Background()
 
-// 	bookingRepo := new(mocks.MockBookingRepository)
-// 	outboxRepo := new(mocks.MockOutboxRepository)
+	bookingRepo := new(mocks.MockBookingRepository)
+	outboxRepo := new(mocks.MockOutboxRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
 
-// 	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
+	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
 
-// 	bookingRepo.On("WithTransaction", mock.Anything).Return(txRepo, nil)
+	exists := true
 
-// 	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(exists, nil)
 
-// 	outboxRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+	bookingRepo.On("WithTransaction", mock.Anything).Return(txRepo, nil)
 
-// 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created")
+	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 
-// 	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+	outboxRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, booking)
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
-// 	bookingRepo.AssertExpectations(t)
-// 	outboxRepo.AssertExpectations(t)
-// }
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
 
-// func TestCreateBookingError(t *testing.T) {
-// 	ctx := context.Background()
+	assert.NoError(t, err)
+	assert.NotNil(t, booking)
 
-// 	bookingRepo := new(mocks.MockBookingRepository)
-// 	outboxRepo := new(mocks.MockOutboxRepository)
+	userService.AssertExpectations(t)
+	bookingRepo.AssertExpectations(t)
+	outboxRepo.AssertExpectations(t)
+}
 
-// 	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
+func TestCreateBookingError(t *testing.T) {
+	ctx := context.Background()
 
-// 	bookingRepo.On("WithTransaction", mock.Anything).Return(txRepo, nil)
+	bookingRepo := new(mocks.MockBookingRepository)
+	outboxRepo := new(mocks.MockOutboxRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
 
-// 	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(errors.New("database error"))
+	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
 
-// 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "")
+	exists := true
 
-// 	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(exists, nil)
 
-// 	assert.Error(t, err)
-// 	assert.Nil(t, booking)
-// }
+	bookingRepo.On("WithTransaction", mock.Anything).Return(txRepo, nil)
 
-// func TestCreateBookingOutboxError(t *testing.T) {
-// 	ctx := context.Background()
+	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(errors.New("database error"))
 
-// 	bookingRepo := new(mocks.MockBookingRepository)
-// 	outboxRepo := new(mocks.MockOutboxRepository)
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
-// 	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
 
-// 	bookingRepo.On("WithTransaction", mock.Anything).Return(txRepo, nil)
+	assert.Error(t, err)
+	assert.Nil(t, booking)
 
-// 	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+	userService.AssertExpectations(t)
+	bookingRepo.AssertExpectations(t)
+	outboxRepo.AssertExpectations(t)
+}
 
-// 	outboxRepo.On("Create", mock.Anything, mock.Anything).Return(errors.New("outbox error"))
+func TestCreateBookingOutboxError(t *testing.T) {
+	ctx := context.Background()
 
-// 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "")
+	bookingRepo := new(mocks.MockBookingRepository)
+	outboxRepo := new(mocks.MockOutboxRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
 
-// 	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
 
-// 	assert.Error(t, err)
-// 	assert.Nil(t, booking)
-// }
+	exists := true
 
-// func TestCreateBookingTransactionError(t *testing.T) {
-// 	ctx := context.Background()
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(exists, nil)
 
-// 	bookingRepo := new(mocks.MockBookingRepository)
+	bookingRepo.On("WithTransaction", mock.Anything).Return(txRepo, nil)
 
-// 	bookingRepo.On("WithTransaction", mock.Anything).Return(nil, errors.New("transaction error"))
+	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 
-// 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "")
+	outboxRepo.On("Create", mock.Anything, mock.Anything).Return(errors.New("outbox error"))
 
-// 	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
-// 	assert.Error(t, err)
-// 	assert.Nil(t, booking)
-// }
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
 
-// func TestHandleSeatReservedSuccess(t *testing.T) {
-// 	ctx := context.Background()
+	assert.Error(t, err)
+	assert.Nil(t, booking)
 
-// 	bookingRepo := new(mocks.MockBookingRepository)
+	userService.AssertExpectations(t)
+	bookingRepo.AssertExpectations(t)
+	outboxRepo.AssertExpectations(t)
+}
 
-// 	booking := aggregate.NewBooking(1, 100, 10)
+func TestCreateBookingTransactionError(t *testing.T) {
+	ctx := context.Background()
 
-// 	bookingRepo.On("FindByEventAndSeat", mock.Anything, uint(100), uint(10)).Return(booking, nil)
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
 
-// 	bookingRepo.On("UpdateStatus", mock.Anything, booking.ID, string(valueobject.BookingConfirmed)).Return(nil)
+	exists := true
 
-// 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "")
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(exists, nil)
 
-// 	err := bookingUsecase.HandleSeatReserved(ctx, event.SeatReserved{EventID: 100, SeatID: 10})
+	bookingRepo.On("WithTransaction", mock.Anything).Return(nil, errors.New("transaction error"))
 
-// 	assert.NoError(t, err)
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
-// 	bookingRepo.AssertExpectations(t)
-// }
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
 
-// func TestHandleSeatReservedBookingNotFound(t *testing.T) {
-// 	ctx := context.Background()
+	assert.Error(t, err)
+	assert.Nil(t, booking)
 
-// 	bookingRepo := new(mocks.MockBookingRepository)
+	userService.AssertExpectations(t)
+	bookingRepo.AssertExpectations(t)
+}
 
-// 	bookingRepo.On("FindByEventAndSeat", mock.Anything, uint(100), uint(10)).Return(nil, nil)
+func TestHandleSeatReservedSuccess(t *testing.T) {
+	ctx := context.Background()
 
-// 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "")
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
 
-// 	err := bookingUsecase.HandleSeatReserved(ctx, event.SeatReserved{
-// 		EventID: 100,
-// 		SeatID:  10,
-// 	})
+	exists := true
 
-// 	assert.Error(t, err)
+	booking := aggregate.NewBooking(1, 100, 10)
 
-// 	assert.Equal(t, "booking not found", err.Error())
-// }
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(exists, nil)
 
-// func TestHandleSeatReservedAlreadyConfirmed(t *testing.T) {
-// 	ctx := context.Background()
+	bookingRepo.On("FindByEventAndSeat", mock.Anything, uint(100), uint(10)).Return(booking, nil)
 
-// 	bookingRepo := new(mocks.MockBookingRepository)
+	bookingRepo.On("UpdateStatus", mock.Anything, booking.ID, string(valueobject.BookingConfirmed)).Return(nil)
 
-// 	booking := aggregate.NewBooking(1, 100, 10)
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
-// 	booking.Confirm()
+	err := bookingUsecase.HandleSeatReserved(ctx, event.SeatReserved{EventID: 100, SeatID: 10})
 
-// 	bookingRepo.On("FindByEventAndSeat", mock.Anything, uint(100), uint(10)).Return(booking, nil)
+	assert.NoError(t, err)
 
-// 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "")
+	bookingRepo.AssertExpectations(t)
+}
 
-// 	err := bookingUsecase.HandleSeatReserved(ctx, event.SeatReserved{
-// 		EventID: 100,
-// 		SeatID:  10,
-// 	})
+func TestHandleSeatReservedBookingNotFound(t *testing.T) {
+	ctx := context.Background()
 
-// 	assert.NoError(t, err)
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
 
-// 	bookingRepo.AssertNotCalled(t, "UpdateStatus", mock.Anything, mock.Anything, mock.Anything)
-// }
+	bookingRepo.On("FindByEventAndSeat", mock.Anything, uint(100), uint(10)).Return(nil, nil)
 
-// func TestHandleSeatReservedUpdateStatusError(t *testing.T) {
-// 	ctx := context.Background()
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
-// 	bookingRepo := new(mocks.MockBookingRepository)
+	err := bookingUsecase.HandleSeatReserved(ctx, event.SeatReserved{
+		EventID: 100,
+		SeatID:  10,
+	})
 
-// 	booking := aggregate.NewBooking(1, 100, 10)
+	assert.Error(t, err)
 
-// 	bookingRepo.On("FindByEventAndSeat", mock.Anything, uint(100), uint(10)).Return(booking, nil)
+	assert.Equal(t, "booking not found", err.Error())
+}
 
-// 	bookingRepo.On("UpdateStatus", mock.Anything, booking.ID, string(valueobject.BookingConfirmed)).Return(errors.New("update error"))
+func TestHandleSeatReservedAlreadyConfirmed(t *testing.T) {
+	ctx := context.Background()
 
-// 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "")
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
 
-// 	err := bookingUsecase.HandleSeatReserved(ctx, event.SeatReserved{
-// 		EventID: 100,
-// 		SeatID:  10,
-// 	})
+	booking := aggregate.NewBooking(1, 100, 10)
 
-// 	assert.Error(t, err)
+	booking.Confirm()
 
-// 	assert.Equal(t, "update error", err.Error())
-// }
+	bookingRepo.On("FindByEventAndSeat", mock.Anything, uint(100), uint(10)).Return(booking, nil)
+
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
+
+	err := bookingUsecase.HandleSeatReserved(ctx, event.SeatReserved{
+		EventID: 100,
+		SeatID:  10,
+	})
+
+	assert.NoError(t, err)
+
+	bookingRepo.AssertNotCalled(t, "UpdateStatus", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func TestHandleSeatReservedUpdateStatusError(t *testing.T) {
+	ctx := context.Background()
+
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
+
+	booking := aggregate.NewBooking(1, 100, 10)
+
+	bookingRepo.On("FindByEventAndSeat", mock.Anything, uint(100), uint(10)).Return(booking, nil)
+
+	bookingRepo.On("UpdateStatus", mock.Anything, booking.ID, string(valueobject.BookingConfirmed)).Return(errors.New("update error"))
+
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
+
+	err := bookingUsecase.HandleSeatReserved(ctx, event.SeatReserved{
+		EventID: 100,
+		SeatID:  10,
+	})
+
+	assert.Error(t, err)
+
+	assert.Equal(t, "update error", err.Error())
+}
+
+func TestCreateBookingUserExists(t *testing.T) {
+	ctx := context.Background()
+
+	bookingRepo := new(mocks.MockBookingRepository)
+	outboxRepo := new(mocks.MockOutboxRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
+
+	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
+
+	exists := true
+
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(exists, nil)
+
+	bookingRepo.On("WithTransaction", mock.Anything).Return(txRepo, nil)
+
+	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+
+	outboxRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
+
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, booking)
+
+	userService.AssertExpectations(t)
+	bookingRepo.AssertExpectations(t)
+	outboxRepo.AssertExpectations(t)
+}
+
+func TestCreateBookingUserNotFound(t *testing.T) {
+	ctx := context.Background()
+
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
+
+	exists := false
+
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(exists, nil)
+
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
+
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+
+	assert.Error(t, err)
+	assert.Nil(t, booking)
+
+	userService.AssertExpectations(t)
+
+	// user ไม่พบ -> ไม่ควรแตะ DB transaction
+	bookingRepo.AssertNotCalled(t, "WithTransaction", mock.Anything)
+}
+
+func TestCreateBookingUserServiceError(t *testing.T) {
+	ctx := context.Background()
+
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
+
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(false, errors.New("user service unavailable"))
+
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
+
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+
+	assert.Error(t, err)
+	assert.Nil(t, booking)
+
+	bookingRepo.AssertNotCalled(t, "WithTransaction", mock.Anything)
+}
