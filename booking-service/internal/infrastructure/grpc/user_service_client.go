@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log"
 
 	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user"
 	"google.golang.org/grpc"
@@ -25,13 +26,18 @@ func NewUserServiceClient(addr string) (*UserServiceClient, error) {
 }
 
 func (c *UserServiceClient) GetUser(ctx context.Context, userID uint64) (bool, error) {
+	log.Printf("gRPC GetUser called: user_id=%d", userID)
+
 	resp, err := c.client.GetUser(ctx, &userpb.GetUserRequest{
 		UserId: userID,
 	})
+
 	if err != nil {
+		log.Printf("gRPC GetUser error: %v", err)
 		return false, err
 	}
 
+	log.Printf("gRPC GetUser response: exists=%v", resp.Exists)
 	return resp.Exists, nil
 }
 

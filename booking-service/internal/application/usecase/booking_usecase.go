@@ -32,11 +32,22 @@ func NewBookingUsecase(bookingRepo repository.BookingRepository, producer *kafka
 
 func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uint) (*aggregate.Booking, error) {
 
-	fmt.Println("STEP 1 create booking")
+	fmt.Println("STEP 1 verify user")
+
+	exists, err := u.userService.GetUser(ctx, uint64(userID))
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify user : %w", err)
+	}
+
+	if !exists {
+		return nil, errors.New("user not found")
+	}
+
+	fmt.Println("STEP 2 create booking")
 
 	var result *aggregate.Booking
 
-	err := u.bookingRepo.WithTransaction(ctx, func(repo repository.TxRepository) error {
+	err = u.bookingRepo.WithTransaction(ctx, func(repo repository.TxRepository) error {
 
 		booking := aggregate.NewBooking(userID, eventID, seatID)
 		if booking == nil {
