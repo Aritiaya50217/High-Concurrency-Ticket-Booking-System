@@ -34,6 +34,13 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 
 	fmt.Println("STEP 1 verify user")
 
+	if userID == 0 {
+		return nil, errors.New("user id is required.")
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
 	exists, err := u.userService.GetUser(ctx, uint64(userID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify user : %w", err)
