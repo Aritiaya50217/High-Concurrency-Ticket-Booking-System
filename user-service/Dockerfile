@@ -30,6 +30,8 @@ FROM alpine:latest
 
 WORKDIR /app
 
+RUN apk add --no-cache netcat-openbsd
+
 COPY --from=builder /app/user-service/user-service .
 COPY --from=builder /app/user-service/configs ./configs
 
