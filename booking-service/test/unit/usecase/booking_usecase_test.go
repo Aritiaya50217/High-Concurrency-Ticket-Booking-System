@@ -304,3 +304,27 @@ func TestCreateBookingUserServiceError(t *testing.T) {
 
 	bookingRepo.AssertNotCalled(t, "WithTransaction", mock.Anything)
 }
+
+func TestCreateBookingUserServiceTimeout(t *testing.T) {
+	ctx := context.Background()
+
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := eventservice.SeatServiceClient{}
+
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(false, context.DeadlineExceeded)
+
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
+
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+
+	assert.Error(t, err)
+	assert.Nil(t, booking)
+
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
+
+	// Timeout -> ไม่ควรเปิด DB transaction
+	bookingRepo.AssertNotCalled(t, "WithTransaction", mock.Anything)
+
+	userService.AssertExpectations(t)
+}
