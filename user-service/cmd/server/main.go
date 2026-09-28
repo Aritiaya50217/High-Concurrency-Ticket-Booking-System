@@ -21,7 +21,7 @@ import (
 
 	grpcHandler "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/grpc"
 
-	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user"
+	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user/v1"
 )
 
 func main() {

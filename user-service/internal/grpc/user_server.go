@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user"
+	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user/v1"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/user-service/internal/application/usecase"
 )
 
