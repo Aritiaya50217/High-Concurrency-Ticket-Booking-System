@@ -9,7 +9,6 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/application/usecase"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/config"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/database"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/external/eventservice"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/grpc"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/metrics"
@@ -74,15 +73,6 @@ func main() {
 	repoOutbox := repository.NewOutboxRepository(db)
 
 	// ----------------------------
-	// External
-	// ----------------------------
-	baseEventURL := os.Getenv("BASE_EVENT_URL")
-	if baseEventURL == "" {
-		baseEventURL = "http://localhost:8082"
-	}
-	eventClient := eventservice.NewSeatServiceClient(baseEventURL)
-
-	// ----------------------------
 	// gRPC
 	// ----------------------------
 	userClient, err := grpc.NewUserServiceClient(cfg.GRPC.UserServiceAddr)
@@ -92,6 +82,13 @@ func main() {
 
 	defer userClient.Close()
 
+	eventClient, err := grpc.NewEventServiceClient(cfg.GRPC.EventServiceAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer eventClient.Close()
+
 	// ----------------------------
 	// Usecase
 	// ----------------------------
@@ -99,7 +96,7 @@ func main() {
 		repoBooking,
 		producer,
 		cfg.Kafka.TopicBookingCreated,
-		*eventClient,
+		eventClient,
 		userClient,
 	)
 

@@ -13,7 +13,6 @@ import (
 	domainEvent "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/event"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/repository"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/external/eventservice"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/kafka"
 	"github.com/google/uuid"
 )
@@ -22,11 +21,11 @@ type BookingUsecase struct {
 	bookingRepo repository.BookingRepository
 	producer    *kafka.Producer
 	topic       string
-	eventClient eventservice.SeatServiceClient
+	eventClient EventService
 	userService UserService
 }
 
-func NewBookingUsecase(bookingRepo repository.BookingRepository, producer *kafka.Producer, topic string, eventClient eventservice.SeatServiceClient, userService UserService) *BookingUsecase {
+func NewBookingUsecase(bookingRepo repository.BookingRepository, producer *kafka.Producer, topic string, eventClient EventService, userService UserService) *BookingUsecase {
 	return &BookingUsecase{bookingRepo: bookingRepo, producer: producer, topic: topic, eventClient: eventClient, userService: userService}
 }
 
@@ -50,7 +49,13 @@ func (u *BookingUsecase) Create(ctx context.Context, userID, eventID, seatID uin
 		return nil, errors.New("user not found")
 	}
 
-	fmt.Println("STEP 2 create booking")
+	fmt.Println("STEP 2 reserve seat via gRPC")
+
+	if err := u.eventClient.ReserveSeat(ctx, eventID, seatID, userID); err != nil {
+		return nil, fmt.Errorf("failed to reserve seat: %w", err)
+	}
+
+	fmt.Println("STEP 3 create booking")
 
 	var result *aggregate.Booking
 

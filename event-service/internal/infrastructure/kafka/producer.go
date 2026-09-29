@@ -32,7 +32,6 @@ func (p *Producer) Publish(ctx context.Context, topic string, data any) error {
 	}
 
 	return p.writer.WriteMessages(ctx, kafkago.Message{
-		Topic: topic,
 		Value: payload,
 	})
 }
