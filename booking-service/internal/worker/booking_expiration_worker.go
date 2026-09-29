@@ -27,47 +27,51 @@ func (w *BookingExpirationWorker) Start() {
 	defer ticker.Stop()
 
 	for range ticker.C {
-		ctx := context.Background()
+		w.RunOnce(context.Background())
+	}
+}
 
-		bookings, err := w.bookingRepo.FindExpiredBookings(ctx)
-		if err != nil {
-			log.Println("find expired booking error : ", err)
+func (w *BookingExpirationWorker) RunOnce(ctx context.Context) {
+	bookings, err := w.bookingRepo.FindExpiredBookings(ctx)
+	if err != nil {
+		log.Println("find expired booking error : ", err)
+		return
+	}
+
+	for _, booking := range bookings {
+		if booking.Status != valueobject.BookingPending {
 			continue
 		}
 
-		for _, booking := range bookings {
-			if booking.Status != valueobject.BookingPending {
-				continue
-			}
+		log.Println("booking expired : ", booking.ID)
 
-			log.Println("booking expired : ", booking.ID)
-			booking.Expire()
+		booking.Expire()
 
-			if err := w.bookingRepo.UpdateStatus(ctx, booking.ID, string(booking.Status)); err != nil {
-				log.Println("update booking fail : ", err)
-				continue
-			}
-
-			// create event
-			cancelledEvent := domainEvent.NewBookingCancelled(booking.ID, booking.UserID, booking.SeatID, booking.EventID)
-			payloadBytes, err := json.Marshal(cancelledEvent)
-			if err != nil {
-				log.Println("marshal booking cancelled fail:", err)
-				continue
-			}
-
-			outbox := &entity.OutboxEvent{
-				EventType: cancelledEvent.EventName(),
-				Payload:   string(payloadBytes),
-				Status:    entity.OutboxPending,
-				CreatedAt: time.Now(),
-			}
-
-			if err := w.outboxRepo.Create(ctx, outbox); err != nil {
-				log.Println("create outbox fail:", err)
-				continue
-			}
-			log.Printf("booking.cancelled created: booking=%d seat=%d", booking.ID, booking.SeatID)
+		if err := w.bookingRepo.UpdateStatus(ctx, booking.ID, string(booking.Status)); err != nil {
+			log.Println("update booking fail : ", err)
+			continue
 		}
+
+		cancelledEvent := domainEvent.NewBookingCancelled(booking.ID, booking.UserID, booking.SeatID, booking.EventID)
+
+		payloadBytes, err := json.Marshal(cancelledEvent)
+		if err != nil {
+			log.Println("marshal booking cancelled fail:", err)
+			continue
+		}
+
+		outbox := &entity.OutboxEvent{
+			EventType: cancelledEvent.EventName(),
+			Payload:   string(payloadBytes),
+			Status:    entity.OutboxPending,
+			CreatedAt: time.Now(),
+		}
+
+		if err := w.outboxRepo.Create(ctx, outbox); err != nil {
+			log.Println("create outbox fail:", err)
+			continue
+		}
+
+		log.Printf("booking.cancelled created: booking=%d seat=%d", booking.ID, booking.SeatID)
 	}
 }
