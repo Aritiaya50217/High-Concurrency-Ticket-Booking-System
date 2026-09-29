@@ -9,7 +9,6 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/aggregate"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/event"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/domain/valueobject"
-	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/internal/infrastructure/external/eventservice"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/booking-service/test/unit/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -21,7 +20,7 @@ func TestCreateBookingSuccess(t *testing.T) {
 	bookingRepo := new(mocks.MockBookingRepository)
 	outboxRepo := new(mocks.MockOutboxRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
 
@@ -34,6 +33,8 @@ func TestCreateBookingSuccess(t *testing.T) {
 	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 
 	outboxRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+
+	eventClient.On("ReserveSeat", mock.Anything, mock.AnythingOfType("uint"), mock.AnythingOfType("uint"), mock.AnythingOfType("uint")).Return(nil)
 
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
@@ -53,7 +54,7 @@ func TestCreateBookingError(t *testing.T) {
 	bookingRepo := new(mocks.MockBookingRepository)
 	outboxRepo := new(mocks.MockOutboxRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
 
@@ -64,6 +65,8 @@ func TestCreateBookingError(t *testing.T) {
 	bookingRepo.On("WithTransaction", mock.Anything).Return(txRepo, nil)
 
 	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(errors.New("database error"))
+
+	eventClient.On("ReserveSeat", mock.Anything, mock.AnythingOfType("uint"), mock.AnythingOfType("uint"), mock.AnythingOfType("uint")).Return(nil)
 
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
@@ -83,7 +86,7 @@ func TestCreateBookingOutboxError(t *testing.T) {
 	bookingRepo := new(mocks.MockBookingRepository)
 	outboxRepo := new(mocks.MockOutboxRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
 
@@ -96,6 +99,8 @@ func TestCreateBookingOutboxError(t *testing.T) {
 	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 
 	outboxRepo.On("Create", mock.Anything, mock.Anything).Return(errors.New("outbox error"))
+
+	eventClient.On("ReserveSeat", mock.Anything, mock.AnythingOfType("uint"), mock.AnythingOfType("uint"), mock.AnythingOfType("uint")).Return(nil)
 
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
@@ -114,13 +119,15 @@ func TestCreateBookingTransactionError(t *testing.T) {
 
 	bookingRepo := new(mocks.MockBookingRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	exists := true
 
 	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(exists, nil)
 
 	bookingRepo.On("WithTransaction", mock.Anything).Return(nil, errors.New("transaction error"))
+
+	eventClient.On("ReserveSeat", mock.Anything, mock.AnythingOfType("uint"), mock.AnythingOfType("uint"), mock.AnythingOfType("uint")).Return(nil)
 
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
@@ -138,7 +145,7 @@ func TestHandleSeatReservedSuccess(t *testing.T) {
 
 	bookingRepo := new(mocks.MockBookingRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	exists := true
 
@@ -164,7 +171,7 @@ func TestHandleSeatReservedBookingNotFound(t *testing.T) {
 
 	bookingRepo := new(mocks.MockBookingRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	bookingRepo.On("FindByEventAndSeat", mock.Anything, uint(100), uint(10)).Return(nil, nil)
 
@@ -185,7 +192,7 @@ func TestHandleSeatReservedAlreadyConfirmed(t *testing.T) {
 
 	bookingRepo := new(mocks.MockBookingRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	booking := aggregate.NewBooking(1, 100, 10)
 
@@ -210,7 +217,7 @@ func TestHandleSeatReservedUpdateStatusError(t *testing.T) {
 
 	bookingRepo := new(mocks.MockBookingRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	booking := aggregate.NewBooking(1, 100, 10)
 
@@ -236,7 +243,7 @@ func TestCreateBookingUserExists(t *testing.T) {
 	bookingRepo := new(mocks.MockBookingRepository)
 	outboxRepo := new(mocks.MockOutboxRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	txRepo := mocks.NewTxRepository(bookingRepo, outboxRepo)
 
@@ -249,6 +256,8 @@ func TestCreateBookingUserExists(t *testing.T) {
 	bookingRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 
 	outboxRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+
+	eventClient.On("ReserveSeat", mock.Anything, mock.AnythingOfType("uint"), mock.AnythingOfType("uint"), mock.AnythingOfType("uint")).Return(nil)
 
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
 
@@ -267,7 +276,7 @@ func TestCreateBookingUserNotFound(t *testing.T) {
 
 	bookingRepo := new(mocks.MockBookingRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	exists := false
 
@@ -291,7 +300,7 @@ func TestCreateBookingUserServiceError(t *testing.T) {
 
 	bookingRepo := new(mocks.MockBookingRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(false, errors.New("user service unavailable"))
 
@@ -310,7 +319,7 @@ func TestCreateBookingUserServiceTimeout(t *testing.T) {
 
 	bookingRepo := new(mocks.MockBookingRepository)
 	userService := new(mocks.MockUserService)
-	eventClient := eventservice.SeatServiceClient{}
+	eventClient := new(mocks.MockEventService)
 
 	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(false, context.DeadlineExceeded)
 
