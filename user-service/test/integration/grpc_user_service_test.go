@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user"
+	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user"
+	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

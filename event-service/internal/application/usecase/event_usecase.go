@@ -70,35 +70,19 @@ func (u *EventUsecase) HandleBookingCreated(ctx context.Context, event domainEve
 		return nil
 	}
 
-	// business logic
-	err = u.repo.Transaction(ctx, func(repo repository.EventRepository) error {
-		agg, err := repo.FindByIDForUpdate(ctx, event.EventID)
-		if err != nil {
-			log.Println("FindByIDForUpdate error : ", err)
-			return err
-		}
+	// booking.created is handled asynchronously.
+	// Seat reservation is handled by gRPC ReserveSeat()
 
-		log.Println("seat before: ", agg.Seats)
+	if err := u.inboxRepo.MarkProcessed(
+		ctx,
+		eventID,
+		"booking.created",
+	); err != nil {
+		log.Println("MarkProcessed error : ", err)
+		return err
+	}
 
-		if err := agg.ReserveSeat(event.SeatID); err != nil {
-			log.Println("ReserveSeat error : ", err)
-			return err
-		}
-
-		log.Println("seat after: ", agg.Seats)
-
-		if err := repo.Update(ctx, agg); err != nil {
-			return err
-		}
-
-		// mark processed
-		if err := u.inboxRepo.MarkProcessed(ctx, eventID, "booking.created"); err != nil {
-			return err
-		}
-		return nil
-	})
-
-	return err
+	return nil
 
 }
 

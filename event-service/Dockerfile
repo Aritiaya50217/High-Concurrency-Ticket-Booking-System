@@ -3,18 +3,26 @@ FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 
-# install git (บาง lib ต้องใช้)
 RUN apk add --no-cache git
 
-# copy go mod
-COPY go.mod go.sum ./
+# copy go.mod
+COPY event-service/go.mod event-service/go.sum ./event-service/
+
+# copy contracts module
+COPY contracts/go.mod ./contracts/
+
+# download dependencies
+WORKDIR /app/event-service
 RUN go mod download
 
-# copy source code
-COPY . .
+# copy source
+WORKDIR /app
+COPY event-service/ ./event-service/
+COPY contracts/ ./contracts/
 
-# build binary
-RUN CGO_ENABLED=0 go build -o event-service ./cmd/server
+# build
+WORKDIR /app/event-service
+RUN go build -o event-service ./cmd/server
 
 
 # ---------- runtime stage ----------
@@ -22,12 +30,9 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# copy binary from builder
-COPY --from=builder /app/event-service .
+COPY --from=builder /app/event-service/event-service .
+COPY --from=builder /app/event-service/configs ./configs
 
-# copy config folder
-COPY configs ./configs
-
-EXPOSE 8082
+EXPOSE 8082 50051
 
 CMD ["./event-service"]

@@ -40,7 +40,8 @@ type Config struct {
 	}
 
 	GRPC struct {
-		UserServiceAddr string `mapstructure:"user_service_addr"`
+		UserServiceAddr  string `mapstructure:"user_service_addr"`
+		EventServiceAddr string `mapstructure:"event_service_addr"`
 	} `mapstructure:"grpc"`
 }
 

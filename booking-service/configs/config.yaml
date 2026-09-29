@@ -25,3 +25,4 @@ ticket-service:
 
 grpc:
   user_service_addr: ${USER_SERVICE_GRPC_ADDR}
+  event_service_addr: ${EVENT_SERVICE_GRPC_ADDR}
