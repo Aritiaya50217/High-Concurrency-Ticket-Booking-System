@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/metrics"
@@ -17,7 +18,10 @@ import (
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/worker"
 	"github.com/joho/godotenv"
 
+	eventpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/event/v1"
+	eventgrpc "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/grpc"
 	infraRepo "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/infrastructure/repository"
+	grpcserver "google.golang.org/grpc"
 )
 
 func main() {
@@ -59,11 +63,14 @@ func main() {
 
 	seatUsecase := usecase.NewSeatUsecase(eventRepo)
 
-	producer := kafkaInfra.NewProducer([]string{"localhost:9092"}, "seat-events")
+	producer := kafkaInfra.NewProducer(cfg.Kafka.Brokers, "seat-events")
 
 	eventProducerRepo := infraRepo.NewEventProducerRepository(producer)
 
 	eventUsecase := usecase.NewEventUsecase(eventRepo, inboxRepo, eventProducerRepo)
+
+	// gRPC
+	eventGRPCServer := eventgrpc.NewEventServer(eventUsecase)
 
 	eventHandler := handler.NewEventHandler(eventUsecase, seatUsecase)
 
@@ -81,6 +88,22 @@ func main() {
 	go bookingCosumer.Start()
 
 	log.Println("Kafka consumer started")
+
+	// gRPC listener
+	grpcListener, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatal(err)
+	}
+	grpcServer := grpcserver.NewServer()
+
+	eventpb.RegisterEventServiceServer(grpcServer, eventGRPCServer)
+
+	go func() {
+		log.Println("Event gRPC server running on :50051")
+		if err := grpcServer.Serve(grpcListener); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	r := router.SetRouter(eventHandler, jwtService)
 

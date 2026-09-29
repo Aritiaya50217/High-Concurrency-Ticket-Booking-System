@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package event.v1;
+
+option go_package = "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/event/v1";
+
+service EventService {
+  rpc ReserveSeat(ReserveSeatRequest) returns (ReserveSeatResponse);
+}
+
+message ReserveSeatRequest {
+  uint64 event_id = 1;
+  uint64 seat_id = 2;
+  uint64 user_id = 3;
+}
+
+message ReserveSeatResponse {
+  bool success = 1;
+}
