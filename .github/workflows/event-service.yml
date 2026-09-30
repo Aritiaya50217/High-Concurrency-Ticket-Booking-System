@@ -90,9 +90,12 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest ./event-service
-          docker tag ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest \
-                    ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
+            run: docker build -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest -f ./event-service/Dockerfile .
+
+      # ----------------------------
+      # Tag Docker image
+      - name: Tag Docker image
+        run: docker tag ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
 
       # ----------------------------
       # Push Docker image
