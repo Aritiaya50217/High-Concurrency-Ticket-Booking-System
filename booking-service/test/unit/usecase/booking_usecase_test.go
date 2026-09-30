@@ -337,3 +337,79 @@ func TestCreateBookingUserServiceTimeout(t *testing.T) {
 
 	userService.AssertExpectations(t)
 }
+
+func TestCreateBookingEventServiceError(t *testing.T) {
+	ctx := context.Background()
+
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := new(mocks.MockEventService)
+
+	exists := true
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(exists, nil)
+
+	eventClient.On("ReserveSeat", mock.Anything, mock.AnythingOfType("uint"), mock.AnythingOfType("uint"), mock.AnythingOfType("uint")).Return(errors.New("event service unavailable"))
+
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
+
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+
+	assert.Error(t, err)
+	assert.Nil(t, booking)
+
+	bookingRepo.AssertNotCalled(t, "WithTransaction", mock.Anything)
+
+	userService.AssertExpectations(t)
+	eventClient.AssertExpectations(t)
+}
+
+func TestCreateBookingEventServiceTimeout(t *testing.T) {
+	ctx := context.Background()
+
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := new(mocks.MockEventService)
+
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(true, nil)
+
+	eventClient.On("ReserveSeat", mock.Anything, mock.AnythingOfType("uint"), mock.AnythingOfType("uint"), mock.AnythingOfType("uint")).Return(context.DeadlineExceeded)
+
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
+
+	booking, err := bookingUsecase.Create(ctx, 1, 100, 10)
+	assert.Error(t, err)
+	assert.Nil(t, booking)
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
+
+	bookingRepo.AssertNotCalled(t, "WithTransaction", mock.Anything)
+
+	userService.AssertExpectations(t)
+	eventClient.AssertExpectations(t)
+}
+
+func TestCreateBookingEventServiceContextTimeout(t *testing.T) {
+	ctx := context.Background()
+
+	bookingRepo := new(mocks.MockBookingRepository)
+	userService := new(mocks.MockUserService)
+	eventClient := new(mocks.MockEventService)
+
+	userService.On("GetUser", mock.Anything, mock.AnythingOfType("uint64")).Return(true, nil)
+
+	eventClient.On("ReserveSeat", mock.Anything, mock.AnythingOfType("uint"), mock.AnythingOfType("uint"), mock.AnythingOfType("uint")).Run(func(args mock.Arguments) {
+		ctx := args.Get(0).(context.Context)
+		_, ok := ctx.Deadline()
+
+		assert.True(t, ok)
+	}).Return(context.DeadlineExceeded)
+
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepo, nil, "booking.created", eventClient, userService)
+	_, err := bookingUsecase.Create(ctx, 1, 100, 10)
+
+	assert.Error(t, err)
+	
+	bookingRepo.AssertNotCalled(t, "WithTransaction", mock.Anything)
+
+	userService.AssertExpectations(t)
+	eventClient.AssertExpectations(t)
+}
