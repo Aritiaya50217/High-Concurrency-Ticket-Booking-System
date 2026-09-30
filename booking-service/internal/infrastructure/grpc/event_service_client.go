@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 
 	eventpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/event/v1"
 	"google.golang.org/grpc"
@@ -34,7 +35,11 @@ func (c *EventServiceClient) ReserveSeat(ctx context.Context, eventID, seatID, u
 		SeatId:  uint64(seatID),
 		UserId:  uint64(userID),
 	})
-	return err
+
+	if err != nil {
+		return fmt.Errorf("reserve seat via event service: %w", err)
+	}
+	return nil
 }
 
 func (c *EventServiceClient) Close() error {

@@ -6,6 +6,8 @@ import (
 
 	eventpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/event/v1"
 	"github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/event-service/internal/application/usecase"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type EventServer struct {
@@ -20,6 +22,19 @@ func NewEventServer(eventUsecase *usecase.EventUsecase) *EventServer {
 }
 
 func (s *EventServer) ReserveSeat(ctx context.Context, req *eventpb.ReserveSeatRequest) (*eventpb.ReserveSeatResponse, error) {
+
+	if req.EventId == 0 {
+		return nil, status.Error(codes.InvalidArgument, "event_id is required")
+	}
+
+	if req.SeatId == 0 {
+		return nil, status.Error(codes.InvalidArgument, "seat_id is required")
+	}
+
+	if req.UserId == 0 {
+		return nil, status.Error(codes.InvalidArgument, "user_id is required")
+	}
+	
 	eventID := uint(req.EventId)
 	seatID := uint(req.SeatId)
 	userID := uint(req.UserId)

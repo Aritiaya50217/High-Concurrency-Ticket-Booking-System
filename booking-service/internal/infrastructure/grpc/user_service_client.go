@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	userpb "github.com/Aritiaya50217/High-Concurrency-Ticket-Booking-System/contracts/user/v1"
@@ -34,7 +35,7 @@ func (c *UserServiceClient) GetUser(ctx context.Context, userID uint64) (bool, e
 
 	if err != nil {
 		log.Printf("gRPC GetUser error: %v", err)
-		return false, err
+		return false, fmt.Errorf("get user via user service: %w", err)
 	}
 
 	log.Printf("gRPC GetUser response: exists=%v", resp.Exists)

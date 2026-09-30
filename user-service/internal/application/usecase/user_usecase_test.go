@@ -29,7 +29,7 @@ func (m *MockUserRepo) FindByID(id uint) (*entity.Users, error) {
 }
 
 func (m *MockUserRepo) Profile(id uint) (*entity.Users, error) {
-	return nil, nil
+	return m.user, m.err
 }
 
 func hashPassword(password string) string {
@@ -95,5 +95,56 @@ func TestLoginDBError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Equal(t, "", token)
+	assert.Equal(t, "db error", err.Error())
+}
+
+func TestProfileSuccess(t *testing.T) {
+	repo := &MockUserRepo{
+		user: &entity.Users{
+			ID:    1,
+			Email: "test@gmail.com",
+		},
+	}
+
+	jwt := security.NewJWTService("secret", time.Hour)
+
+	u := NewUserUsecase(repo, jwt)
+
+	user, err := u.Profile(1)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, user)
+	assert.Equal(t, uint(1), user.ID)
+	assert.Equal(t, "test@gmail.com", user.Email)
+
+}
+
+func TestProfileUserNotFound(t *testing.T) {
+	repo := &MockUserRepo{
+		user: nil,
+		err:  nil,
+	}
+
+	jwt := security.NewJWTService("secret", time.Hour)
+
+	u := NewUserUsecase(repo, jwt)
+
+	user, err := u.Profile(1)
+
+	assert.NoError(t, err)
+	assert.Nil(t, user)
+}
+
+func TestProfileDBError(t *testing.T) {
+	repo := &MockUserRepo{user: nil, err: errors.New("db error")}
+
+	jwt := security.NewJWTService("secret", time.Hour)
+
+	u := NewUserUsecase(repo, jwt)
+
+	user, err := u.Profile(1)
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
 	assert.Equal(t, "db error", err.Error())
 }

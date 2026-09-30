@@ -1,4 +1,4 @@
-package unit
+package usecase_test
 
 import (
 	"context"
@@ -232,4 +232,47 @@ func TestReserveSeatUpdateError(t *testing.T) {
 	repo.AssertExpectations(t)
 
 	producer.AssertNotCalled(t, "Publish", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func TestReserveSeatPublishError(t *testing.T) {
+	repo := new(mocks.MockEventRepository)
+	producer := new(mocks.MockEventProducer)
+
+	eventID := uint(1)
+	seatID := uint(10)
+	userID := uint(100)
+
+	expectedErr := errors.New("publish failed")
+
+	event := &aggregate.Event{
+		ID:          eventID,
+		Name:        "Concert",
+		IsCancelled: false,
+		Seats: []*entity.Seat{
+			{
+				ID:         seatID,
+				EventID:    eventID,
+				SeatNumber: "A1",
+				Status:     valueobject.SeatAvailable,
+				Version:    0,
+			},
+		},
+	}
+	repo.On("FindByIDForUpdate", mock.Anything, eventID).Return(event, nil)
+
+	repo.On("Update", mock.Anything, event).Return(nil)
+
+	producer.On("Publish", mock.Anything, "seat.reserved", mock.Anything).Return(expectedErr)
+
+	u := usecase.NewEventUsecase(repo, nil, producer)
+
+	err := u.ReserveSeat(context.Background(), eventID, seatID, userID)
+
+	require.ErrorIs(t, err, expectedErr)
+
+	require.Equal(t, valueobject.SeatReserved, event.Seats[0].Status)
+
+	repo.AssertExpectations(t)
+
+	producer.AssertExpectations(t)
 }
