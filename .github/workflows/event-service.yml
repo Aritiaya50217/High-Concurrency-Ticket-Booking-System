@@ -5,78 +5,69 @@ on:
     branches: ["main"]
     paths:
       - 'event-service/**'
+      - 'contracts/**'
+      - '.github/workflows/event-service.yml'
+
   pull_request:
     branches: ["main"]
     paths:
       - 'event-service/**'
+      - 'contracts/**'
+      - '.github/workflows/event-service.yml'
+
   workflow_dispatch:
 
 jobs:
-  build-test:
-    name: Build & Test High-Concurrency-Ticket-Booking-System
-    runs-on: ubuntu-latest
+    build-test:
+      name: Build & Test Event Service
+      runs-on: ubuntu-latest
 
-    steps:
+      steps:
       # ----------------------------
       # Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # ----------------------------
-      # Debug: ตรวจสอบไฟล์
-      - name: Debug service folder
-        run: |
-          echo "Root folder: $PWD"
-          ls -la
+        - name: Checkout repository
+          uses: actions/checkout@v4
 
       # ----------------------------
       # Setup Go
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.24.x"
+        - name: Setup Go
+          uses: actions/setup-go@v5
+          with:
+            go-version: "1.26.x"
 
       # ----------------------------
       # Download dependencies
-      - name: Go mod tidy & download
-        run: |
-          cd booking-service
-          go mod tidy
-          go mod download
+        - name: Go mod tidy & download
+          run: |
+            cd event-service
+            go mod tidy
+            go mod download
 
       # ----------------------------
       # Run unit tests
-      - name: Run unit tests
-        run: |
-          cd event-service
-          go test ./internal/... -v -race
+        - name: Run unit tests
+          run: |
+            cd event-service
+            go test ./internal/... -v -race
 
       # ----------------------------
       # Build binary
-      - name: Build binary
-        run: |
-          cd event-service
-          go build -v -o service ./cmd/server
+        - name: Build binary
+          run: |
+            cd event-service
+            go build -v -o service ./cmd/server
 
-  docker:
-    name: Docker Build & Push
-    needs: build-test
-    runs-on: ubuntu-latest
 
-    steps:
+    docker:
+      name: Docker Build & Push Event Service
+      needs: build-test
+      runs-on: ubuntu-latest
+
+      steps:
       # ----------------------------
       # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # ----------------------------
-      # Debug Docker secrets
-      - name: Debug Docker username
-        run: echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}"
 
       # ----------------------------
       # Docker login
@@ -90,16 +81,15 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-            run: docker build -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest -f ./event-service/Dockerfile .
-
-      # ----------------------------
-      # Tag Docker image
-      - name: Tag Docker image
-        run: docker tag ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
+          docker build \
+            -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system-event:latest \
+            -t ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system-event:${{ github.sha }} \
+            -f ./event-service/Dockerfile .
 
       # ----------------------------
       # Push Docker image
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system-event:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/high-concurrency-ticket-booking-system-event:${{ github.sha }}
+
