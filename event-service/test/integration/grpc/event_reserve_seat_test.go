@@ -35,7 +35,6 @@ func TestReserveSeatGRPCSuccess(t *testing.T) {
 
 	db, err := database.NewPostgresDB(cfg)
 	require.NoError(t, err)
-	_ = db
 
 	seedEvent(t, db)
 
