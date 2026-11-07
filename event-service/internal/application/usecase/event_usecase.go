@@ -32,27 +32,42 @@ func (u *EventUsecase) Create(ctx context.Context, name string) (*aggregate.Even
 }
 
 func (u *EventUsecase) ReserveSeat(ctx context.Context, eventID, seatID, userID uint) error {
-	event, err := u.repo.FindByIDForUpdate(ctx, eventID)
-	if err != nil {
+	var reservedEvent *domainEvent.SeatReserved
+
+	if err := u.repo.Transaction(ctx, func(repo repository.EventRepository) error {
+		event, err := repo.FindByIDForUpdate(ctx, eventID)
+		if err != nil {
+			return err
+		}
+
+		if err := event.ReserveSeat(seatID); err != nil {
+			return err
+		}
+
+		if err := repo.Update(ctx, event); err != nil {
+			return err
+		}
+
+		reservedEvent = domainEvent.NewSeatReserved(
+			eventID,
+			seatID,
+			userID,
+		)
+
+		return nil
+
+	}); err != nil {
 		return err
 	}
 
-	if err = event.ReserveSeat(seatID); err != nil {
-		return err
-	}
-
-	if err := u.repo.Update(ctx, event); err != nil {
-		return err
-	}
-
-	// publish event
-	reservedEvent := domainEvent.NewSeatReserved(eventID, seatID, userID)
+	// publish event หลัง transaction commit
 
 	data, err := json.Marshal(reservedEvent)
 	if err != nil {
 		log.Println("SeatReserved error : ", err)
 		return err
 	}
+
 	return u.eventProducer.Publish(ctx, "seat.reserved", data)
 }
 

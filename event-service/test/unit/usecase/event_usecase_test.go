@@ -83,6 +83,8 @@ func TestReserveSeatSuccess(t *testing.T) {
 
 	producer.On("Publish", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
+	repo.On("Transaction", mock.Anything, mock.Anything).Return(nil)
+
 	u := usecase.NewEventUsecase(repo, nil, producer)
 
 	err := u.ReserveSeat(context.Background(), eventID, seatID, userID)
@@ -106,6 +108,8 @@ func TestReserveSeatEventNotFound(t *testing.T) {
 	expectedErr := errors.New("event not found")
 
 	repo.On("FindByIDForUpdate", mock.Anything, eventID).Return(nil, expectedErr)
+
+	repo.On("Transaction", mock.Anything, mock.Anything).Return(nil)
 
 	u := usecase.NewEventUsecase(repo, nil, producer)
 
@@ -145,6 +149,8 @@ func TestReserveSeatSeatNotFound(t *testing.T) {
 
 	repo.On("FindByIDForUpdate", mock.Anything, eventID).Return(event, nil)
 
+	repo.On("Transaction", mock.Anything, mock.Anything).Return(nil)
+
 	u := usecase.NewEventUsecase(repo, nil, producer)
 
 	err := u.ReserveSeat(context.Background(), eventID, seatID, userID)
@@ -181,6 +187,8 @@ func TestReserveSeatAlreadyReserved(t *testing.T) {
 	}
 
 	repo.On("FindByIDForUpdate", mock.Anything, eventID).Return(event, nil)
+
+	repo.On("Transaction", mock.Anything, mock.Anything).Return(nil)
 
 	u := usecase.NewEventUsecase(repo, nil, producer)
 
@@ -223,6 +231,8 @@ func TestReserveSeatUpdateError(t *testing.T) {
 
 	repo.On("Update", mock.Anything, event).Return(expectedErr)
 
+	repo.On("Transaction", mock.Anything, mock.Anything).Return(nil)
+
 	u := usecase.NewEventUsecase(repo, nil, producer)
 
 	err := u.ReserveSeat(context.Background(), eventID, seatID, userID)
@@ -263,6 +273,8 @@ func TestReserveSeatPublishError(t *testing.T) {
 	repo.On("Update", mock.Anything, event).Return(nil)
 
 	producer.On("Publish", mock.Anything, "seat.reserved", mock.Anything).Return(expectedErr)
+
+	repo.On("Transaction", mock.Anything, mock.Anything).Return(nil)
 
 	u := usecase.NewEventUsecase(repo, nil, producer)
 
